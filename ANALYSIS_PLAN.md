@@ -369,6 +369,69 @@ positions (prefix `step8`), with the noise SD from first differences as in § 7.
 **8.5 Decision on Step 2 of the follow-up** (borehole 3 accelerometer, seismic
 records) is Anne's, after 8.3.
 
+## 9. Step 9 — bed tilt in borehole BH2201 (added 2026-10-09)
+
+Written after inspecting the format of ADS A20220506-002 only. Inspected: one day's
+`LOGFILE.TXT`, `WATERPRS.TXT` and summary file, and one 10 min accelerometer file
+(01:00–01:10 on 2 Jan).
+- **ADS "borehole 3" is the paper's BH2201.** It is at 69.21618°S, 39.84774°E, about
+  190 m from GNSS1. Its 1 Hz pressure, averaged to 1 min, equals the deposit's BH2201
+  exactly on 2 Jan (difference 0.000 dbar, r = 1.0). There is no second pressure
+  record.
+- The logger also records a **3-axis accelerometer at 100 Hz** in the same borehole.
+  Columns: time, three axes (one ≈ 1000, i.e. gravity in mg; two ≈ 56 and 59 mg) and a
+  fourth channel ≈ 0.56 (unidentified; reported, not used). The logger re-syncs to GPS
+  time daily at about 00:02 and logs a time-order error at the step.
+
+Data: Sugiyama, Minowa, Kondo & Aoki (2022), ADS A20220506-002, CC BY 4.0 (open date
+2024-05-05). Still **n = 1**.
+
+**9.1 Processing.**
+- Accelerometer files 31 Dec 18:00 – 6 Jan 23:59, reduced to **1 min medians** per
+  axis. The median also suppresses single-sample glitches such as the 00:02 re-sync
+  line.
+- The clock step at each daily re-sync is reported (size in seconds, from the logged
+  line). If it exceeds 1 s, the 1 min series is checked for a step at that minute.
+- Tilt: with g = |a| per minute, the tilt components are
+  θ₁ = asin(a₂/g) and θ₂ = asin(a₃/g) (axis 1 ≈ vertical), in µrad. Two series:
+  - **tilt change** |θ(t) − θ̄_R|, the magnitude of the tilt vector relative to its mean
+    over the reference window R of § 2 (primary);
+  - **tilt rate**, the backward difference over Δ = max(1 h, h) (secondary).
+- The same centred and causal Gaussian local linear smoothers on the 15 min grid,
+  h = 0.25, 0.5, 1, 3 h. The robust variant is not needed (no outlier problem known);
+  it is added only if single-minute spikes > 10 SD appear, as a dated amendment.
+
+**9.2 Quiet-period check.** The 10–15 h band variance of the h = 1 h tilt change on
+1 Jan (pre-event) is compared with the event amplitude (max − min over 2–6 Jan).
+- "tilt resolves the event" if the event amplitude is ≥ 5 × the SD of the 1 Jan
+  band-passed (6–18 h) tilt.
+- Otherwise "tilt does not resolve the event", in which case 9.3 is reported but
+  carries no label.
+
+**9.3 Onsets and leads.** § 2 rules (T2, T3, T5, CP, peak; references R and R′; search
+window S), on:
+- BH2201 level (6.2-corrected);
+- bed tilt change;
+- bed tilt rate;
+- the kinematic GNSS1 speed (Step 6 series).
+
+Pairs:
+- **level → tilt change** (primary);
+- tilt change → GNSS1 speed;
+- level → GNSS1 speed (Step 6, repeated for reference).
+
+The tilt change is a level-type series, so d = 0; for GNSS1 speed, d(h) as in § 6.4.
+Labels follow the § 6.5 rule (1 h tolerance, majority of the defined combinations)
+and carry "(n = 1 event, one site)".
+
+**Interpretation limits (stated in advance).**
+- Sensor tilt records rotation of the instrument in the borehole. That reflects
+  deformation of the basal ice or till, or of the borehole, or the sensor settling.
+  It is a proxy for basal motion, not sliding itself.
+- Sensor settling after installation (31 Dec) is expected. If the tilt drifts
+  monotonically through R, this is reported, and the T(k) rules (which assume a
+  stationary reference) are flagged.
+
 ## Amendments
 
 **A1 — 2026-10-09, before any result was computed.** § 1 specified a one-sided
