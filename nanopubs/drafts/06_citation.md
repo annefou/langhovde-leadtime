@@ -4,6 +4,17 @@
 
 **Description:** *"Declare citations between papers or other works, using Citation Typing Ontology"*
 
+> Template fields (live 2026-10-09): work (filled by the wizard with the Outcome URI), st02 citations [{cites, cited}] ≥ 1.
+>
+> The Outcome is `Inconclusive`, which has no canonical CiTO intention, so citation 1 uses the neutral `discusses` for Sugiyama et al. (2026). The other citations:
+> - `extends`: the prior chain's Outcome (reproduction of the same paper; this work uses its code and data and adds the lead-time analysis);
+> - `credits`: the prior repository, whose v1.0.2 GNSS code is reused;
+> - `citesAsDataSource`: the deposit and the three NIPR ADS records;
+> - `usesMethodIn`: Agnew & Larson (GPS repeat period for the sidereal filter);
+> - `credits` with `{{RESEARCHER_URI}}`: the researcher who proposed the question. This blocks publication until resolved.
+>
+> All DOIs were checked with `resolve_doi` on 2026-10-09.
+
 ## Field-by-field draft
 
 <!-- field: work -->
@@ -34,7 +45,7 @@ Write the chosen type in the block below (a vocabulary label such as `cites as a
 > **Note:** `replicates` is NOT in the Science Live dropdown (despite existing in upstream CiTO). When citing a notebook/tutorial that was directly reused, use **`credits`** instead.
 
 ```
-
+discusses
 ```
 
 ##### DOI or other URL of the cited work (text input)
@@ -49,7 +60,14 @@ If the Outcome cites methods papers, related replications, or upstream tools, ad
 
 One line per further citation, in this exact form (each becomes a pre-filled row):
 
-- _Type: ___ → URL: ___
+- Type: extends → URL: https://w3id.org/sciencelive/np/RAQn6_6v0w8OARZmzh0BBV8maDh_dqNHBlYmgwzNMwGyo
+- Type: credits → URL: https://doi.org/10.5281/zenodo.23257925
+- Type: citesAsDataSource → URL: https://doi.org/10.17632/8wvtxg53ry.1
+- Type: citesAsDataSource → URL: https://ads.nipr.ac.jp/dataset/A20220506-004
+- Type: citesAsDataSource → URL: https://ads.nipr.ac.jp/dataset/A20220506-001
+- Type: citesAsDataSource → URL: https://ads.nipr.ac.jp/dataset/A20220506-002
+- Type: usesMethodIn → URL: https://doi.org/10.1007/s10291-006-0038-4
+- Type: credits → URL: {{RESEARCHER_URI}}
 
 ## Publication note
 

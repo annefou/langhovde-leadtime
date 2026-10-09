@@ -4,6 +4,10 @@
 
 **Form heading:** *"FORRT Claim — Declare an original claim according to FORRT, linking it to an AIDA sentence with a specific FORRT type."*
 
+> Template fields (live 2026-10-09): claim, label, aida (filled by the wizard), forrtType, source (optional).
+>
+> `source` is left empty on purpose: the claim comes from the researcher's question, not from the Sugiyama et al. paper. Add the researcher's own publication URI here if they have one and agree ({{RESEARCHER_CREDIT}}).
+
 ## Field-by-field draft
 
 <!-- field: claim -->
@@ -12,7 +16,7 @@
 Slug becomes part of the nanopub URI. Use kebab-case.
 
 ```
-
+basal-pressure-rises-before-acceleration
 ```
 
 <!-- field: label -->
@@ -21,7 +25,7 @@ Slug becomes part of the nanopub URI. Use kebab-case.
 A descriptive title (not a sentence). Used for searches/discovery.
 
 ```
-
+Basal water pressure rises before grounded-glacier acceleration (lead time of basal signals)
 ```
 
 <!-- field: aida -->
@@ -43,7 +47,7 @@ Pick one. See `docs/claim-type-vocabulary.md` for the seven options and how to c
 - [ ] computational performance (Computational & Performance)
 - [ ] data governance (access control, licensing, FAIR compliance)
 - [ ] data quality (preprocessing, validation, normalization)
-- [ ] descriptive pattern (distribution, trend, proportion)
+- [x] descriptive pattern (distribution, trend, proportion)
 - [ ] model performance (accuracy, F1 score, evaluation metrics)
 - [ ] scalability (Computational & Performance)
 - [ ] statistical significance (significant difference, relationship, or effect)
@@ -54,7 +58,7 @@ Pick one. See `docs/claim-type-vocabulary.md` for the seven options and how to c
 Full URL form: `https://doi.org/...` (NOT bare DOI).
 
 ```
-https://doi.org/10.1038/s41467-026-72724-x
+
 ```
 
 ## Publication note
