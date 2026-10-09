@@ -26,6 +26,8 @@
 # basal first; the Step 6 label subtracts the method's own detection delay d(h).
 
 # %%
+import json
+import os
 import sys
 from pathlib import Path
 
@@ -43,6 +45,11 @@ H6 = [0.25, 0.5, 1, 3]
 PROCS = ["centred", "causal", "causal-robust"]
 STEP_H = 0.25
 GRID = pd.date_range("2021-12-31 00:00", "2022-01-07 00:00", freq="15min", inclusive="left")
+# Step 7 reuses this notebook: other positions, an output prefix, an optional tidal model.
+KIN_FILE = os.environ.get("STEP6_KIN", "kinematic_5min.nc")
+PREFIX = os.environ.get("STEP6_PREFIX", "step6")
+TIDE_MODEL = os.environ.get("STEP6_TIDE_MODEL")
+NOISE_FROM_DIFF = os.environ.get("STEP6_NOISE_FROM_DIFF") == "1"
 
 # %% [markdown]
 # ## 6.2 BH2201 level with measured air pressure
@@ -63,7 +70,7 @@ print(f"Period II peak, corrected: {level_corr['2022-01-02':'2022-01-06'].max():
 # ## 6.3 Series on the 15 min grid (kinematic GNSS; h = 0.25, 0.5, 1, 3 h)
 
 # %%
-kin = xr.open_dataset(RESULTS / "kinematic_5min.nc")
+kin = xr.open_dataset(RESULTS / KIN_FILE)
 aws = xr.open_dataset(CLEAN / "aws.nc")
 forcing = {"tpos": (aws.time.values, np.maximum(aws.air_temperature.values, 0.0)),
            "rain": (aws.time.values, aws.rain_intensity.values),
@@ -76,6 +83,18 @@ def central_rate(x: np.ndarray, step_h: float) -> np.ndarray:
     out[1:-1] = (x[2:] - x[:-2]) / (2 * step_h / 24)
     return out
 
+
+tide_corr = {}
+if TIDE_MODEL:
+    tm = json.loads(Path(TIDE_MODEL).read_text())
+    tide = xr.open_dataset(CLEAN / "tide.nc").tide.to_series()
+    tide.index = tide.index - pd.Timedelta("2.75h")
+    eta = tide.resample("15min").mean()
+    eta = eta - eta.mean()
+    deta = eta.diff() / (STEP_H / 24)
+    for st, m in tm.items():
+        sh = int(round(m["lag_h"] / STEP_H))
+        tide_corr[st] = (m["b"] * eta.shift(sh) + m["c"] * deta.shift(sh)).reindex(GRID).fillna(0).to_numpy()
 
 series: dict[str, pd.Series] = {}
 for h in H6:
@@ -90,6 +109,9 @@ for h in H6:
         series[f"speed_{st}_centred_h{h}"] = pd.Series(np.hypot(central_rate(cen[0], STEP_H), central_rate(cen[1], STEP_H)), GRID)
         series[f"speed_{st}_causal_h{h}"] = pd.Series(np.hypot(backward_rate(cau[0], STEP_H), backward_rate(cau[1], STEP_H)), GRID)
         series[f"speed_{st}_causal-robust_h{h}"] = pd.Series(np.hypot(rob[0][1], rob[1][1]), GRID)
+        if st in tide_corr:
+            for proc in PROCS:
+                series[f"speed_{st}_{proc}_h{h}"] = series[f"speed_{st}_{proc}_h{h}"] - tide_corr[st]
         for proc, z in (("centred", cen[2]), ("causal", cau[2]), ("causal-robust", rob[2][0])):
             series[f"uplift_{st}_{proc}_h{h}"] = pd.Series(z, GRID)
         for proc in PROCS:
@@ -100,7 +122,7 @@ for h in H6:
             series[f"{name}_{proc}_h{h}"] = pd.Series(smooth_on_grid(t, v, GRID, h, causal=proc == "causal"), GRID)
         series[f"{name}_causal-robust_h{h}"] = series[f"{name}_causal_h{h}"]
 xr.Dataset({k: ("time", v.to_numpy()) for k, v in series.items()}, coords={"time": GRID}).to_netcdf(
-    RESULTS / "step6_series_15min.nc")
+    RESULTS / f"{PREFIX}_series_15min.nc")
 
 # %% [markdown]
 # ## 6.4 Detection delay at the kinematic noise level
@@ -110,7 +132,10 @@ noise = {}
 for st in ["GNSS1", "GNSS2"]:
     y = kin[f"y_{st}_fixed"].sel(time=slice("2022-01-01", "2022-01-01 23:59")).to_series().dropna()
     tt = (y.index - y.index[0]) / pd.Timedelta("1D")
-    noise[st] = float(np.std(y - np.polyval(np.polyfit(tt, y, 1), tt), ddof=1))
+    detr = float(np.std(y - np.polyval(np.polyfit(tt, y, 1), tt), ddof=1))
+    diff = float(np.std(np.diff(y.to_numpy()), ddof=1) / np.sqrt(2))
+    print(f"{st}: noise SD detrended {detr:.4f} m, first differences/sqrt2 {diff:.4f} m")
+    noise[st] = diff if NOISE_FROM_DIFF else detr
 print("5 min kinematic northing noise SD (detrended, 1 Jan):", {k: round(v, 4) for k, v in noise.items()})
 rows = []
 for h in H6:
@@ -119,7 +144,7 @@ for h in H6:
         rows.append({"h": h, "proc": proc, "noise_sd_m": noise["GNSS1"], "d_median_h": np.nanmedian(d),
                      "d_iqr_h": float(np.subtract(*np.nanpercentile(d, [75, 25]))), "n_defined": int(np.isfinite(d).sum())})
 delay6 = pd.DataFrame(rows)
-delay6.to_csv(RESULTS / "step6_delay_check.csv", index=False)
+delay6.to_csv(RESULTS / f"{PREFIX}_delay_check.csv", index=False)
 print(delay6.round(2).to_string(index=False))
 D = {(r.proc, r.h): r.d_median_h for r in delay6.itertuples()} | {("centred", h): 0.0 for h in H6}
 
@@ -147,7 +172,7 @@ for var in VARS:
                 rows.append({"series": var, "proc": proc, "h": h, "ref": rname, "rule": "peak",
                              "onset": w.idxmax() if len(w) else None})
 on6 = pd.DataFrame(rows)
-on6.to_csv(RESULTS / "step6_onsets.csv", index=False)
+on6.to_csv(RESULTS / f"{PREFIX}_onsets.csv", index=False)
 print(on6[(on6.ref == "R") & on6.rule.isin(["CP", "T3", "peak"])].pivot_table(
     index=["series", "rule"], columns=["proc", "h"], values="onset", aggfunc="first").to_string())
 
@@ -170,7 +195,7 @@ for b, e in PAIRS:
                     rows.append({"basal": b, "endpoint": e, "proc": proc, "h": h, "ref": rname, "rule": rule,
                                  "lead_h": lead, "d_h": d, "lead_minus_d_h": lead - d})
 leads6 = pd.DataFrame(rows)
-leads6.to_csv(RESULTS / "step6_leads.csv", index=False)
+leads6.to_csv(RESULTS / f"{PREFIX}_leads.csv", index=False)
 
 
 def label(v: pd.Series, n_all: int, first: str) -> str:
@@ -196,7 +221,7 @@ for (b, e, proc), g in leads6[leads6.rule.isin(RULES)].groupby(["basal", "endpoi
                      + (" — uses future data" if proc == "centred" else ""),
                      "status": "pre-registered (§ 6.5)"})
 lab6 = pd.DataFrame(rows)
-lab6.to_csv(RESULTS / "step6_lead_labels.csv", index=False)
+lab6.to_csv(RESULTS / f"{PREFIX}_lead_labels.csv", index=False)
 print(lab6[lab6.basal.isin(["level", "rain", "tpos"])].round(2).to_string(index=False))
 
 # %% [markdown]
@@ -214,6 +239,6 @@ for x in ["level", "uplift_GNSS1"]:
                     rows.append({"X": x, "Y": y, "proc": proc, "h": h, "window": w,
                                  "lag_star_h": best * STEP_H if pd.notna(best) else np.nan, "r_star": r.max(), "r0": r.get(0)})
 xc6 = pd.DataFrame(rows)
-xc6.to_csv(RESULTS / "step6_xcorr.csv", index=False)
+xc6.to_csv(RESULTS / f"{PREFIX}_xcorr.csv", index=False)
 print(xc6[(xc6.X == "level") & (xc6.Y == "speed_GNSS1")].pivot_table(
     index=["proc", "window"], columns="h", values=["lag_star_h", "r_star"]).round(2).to_string())
