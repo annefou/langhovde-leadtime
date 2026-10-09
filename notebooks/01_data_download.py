@@ -14,90 +14,128 @@
 # ---
 
 # %% [markdown]
-# # 01 — Data download
+# # 01 — Data download (Step 0)
 #
-# This notebook fetches all input data needed by the replication pipeline.
-# Every dataset is downloaded from a citable source (Zenodo, GBIF, Copernicus,
-# etc.) and a record of the source is logged into `data/raw/sources.json`
-# alongside the data files.
+# Two inputs, both verified on download (`ANALYSIS_PLAN.md` § 0):
 #
-# **Self-contained data:** The repository ships without input data. This
-# notebook is the only path that brings data into `data/raw/`. A user cloning
-# the repo and running this notebook should get a complete reproducible run.
+# - **Prior code**, `annefou/langhovde-meltwater-replication` v1.0.2, Zenodo
+#   [doi:10.5281/zenodo.23257925](https://doi.org/10.5281/zenodo.23257925). Its
+#   `notebooks/gnss.py` is imported, unmodified, by `03_analysis.py`. Checked against
+#   the MD5 that Zenodo publishes for the archive.
+# - **Field data**, Sugiyama et al. (2026), Mendeley Data
+#   [doi:10.17632/8wvtxg53ry.1](https://doi.org/10.17632/8wvtxg53ry.1), CC BY 4.0. Each
+#   extracted file is checked against the SHA-256 published by the Mendeley API.
 #
-# **Credentials:** if your replication uses a credentialled API, document the
-# credential setup at the top of this notebook, including:
-#
-# - Where the user gets the credential (URL).
-# - Where it lives on disk (or which env var Claude expects).
-# - The corresponding GitHub Actions secret name(s) for CI.
+# No credentials are needed.
 
 # %%
+import hashlib
 import json
+import zipfile
 from pathlib import Path
 
 import requests
 
-# %%
 RAW_DIR = Path("../data/raw")
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
 # %% [markdown]
-# ## Source registry
-#
-# Replace the placeholder source(s) below with your actual data sources. Each
-# entry should record: name, URL or DOI, license, accessed-on date, and SHA-256
-# of the downloaded file (computed and added after first download).
+# ## Prior code (Zenodo v1.0.2)
 
 # %%
-SOURCES = [
-    {
-        "name": "<dataset-name>",
-        "doi": "<10.x/y or null>",
-        "url": "<https://...>",
-        "license": "<CC-BY-4.0 / CC-BY-NC-4.0 / public-domain / ...>",
-        "accessed_on": "2026-10-06",
-        "sha256": None,  # filled after first download
-    },
-    # Add more sources here as needed.
+ZENODO_RECORD = "23257925"
+ZENODO_API = f"https://zenodo.org/api/records/{ZENODO_RECORD}"
+PRIOR_DIR = RAW_DIR / "prior_v1.0.2"
+
+
+def file_hash(path: Path, algo: str) -> str:
+    h = hashlib.new(algo)
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def download(url: str, path: Path) -> None:
+    if path.exists():
+        return
+    with requests.get(url, stream=True, timeout=600) as r:
+        r.raise_for_status()
+        tmp = path.with_suffix(".part")
+        with open(tmp, "wb") as f:
+            for chunk in r.iter_content(chunk_size=1 << 20):
+                f.write(chunk)
+        tmp.rename(path)
+
+
+record = requests.get(ZENODO_API, timeout=60).json()
+assert record["metadata"]["version"] == "v1.0.2", record["metadata"]["version"]
+(zfile,) = record["files"]
+zip_path = RAW_DIR / "prior_v1.0.2.zip"
+download(zfile["links"]["self"], zip_path)
+algo, want = zfile["checksum"].split(":")
+got = file_hash(zip_path, algo)
+if got != want:
+    raise RuntimeError(f"Zenodo archive checksum mismatch: {got} != {want}")
+with zipfile.ZipFile(zip_path) as z:
+    (top,) = {n.split("/")[0] for n in z.namelist()}
+    z.extractall(RAW_DIR)
+if PRIOR_DIR.exists():
+    import shutil
+    shutil.rmtree(PRIOR_DIR)
+(RAW_DIR / top).rename(PRIOR_DIR)
+print(f"prior code v1.0.2 ({zfile['key']}, {algo} verified) -> {PRIOR_DIR}")
+
+# %% [markdown]
+# ## Field data (Mendeley deposit)
+#
+# Same download and verification as v1.0.2 `01_data_download.py`.
+
+# %%
+DATASET_ID, VERSION = "8wvtxg53ry", 1
+MENDELEY_API = "https://data.mendeley.com/public-api"
+MENDELEY_DIR = RAW_DIR / "mendeley"
+mzip = RAW_DIR / f"mendeley_{DATASET_ID}_v{VERSION}.zip"
+
+
+def expected_checksums() -> dict[str, str]:
+    def files_in(folder_id: str) -> list[dict]:
+        r = requests.get(f"{MENDELEY_API}/datasets/{DATASET_ID}/files",
+                         params={"folder_id": folder_id, "version": VERSION}, timeout=60)
+        r.raise_for_status()
+        return r.json()
+
+    out = {f["filename"]: f["content_details"]["sha256_hash"] for f in files_in("root")}
+    folders = requests.get(f"{MENDELEY_API}/datasets/{DATASET_ID}/folders/{VERSION}", timeout=60)
+    folders.raise_for_status()
+    for folder in folders.json():
+        for f in files_in(folder["id"]):
+            out[f"{folder['name']}/{f['filename']}"] = f["content_details"]["sha256_hash"]
+    return out
+
+
+expected = expected_checksums()
+download(f"{MENDELEY_API}/zip/{DATASET_ID}/download/{VERSION}", mzip)
+with zipfile.ZipFile(mzip) as z:
+    z.extractall(MENDELEY_DIR)
+
+extracted = {p.relative_to(MENDELEY_DIR).as_posix(): p for p in MENDELEY_DIR.rglob("*") if p.is_file()}
+problems = []
+for rel, want in sorted(expected.items()):
+    matches = [p for k, p in extracted.items() if k == rel or k.endswith("/" + rel)]
+    if len(matches) != 1:
+        problems.append(f"missing or ambiguous: {rel}")
+    elif file_hash(matches[0], "sha256") != want:
+        problems.append(f"checksum mismatch: {rel}")
+if problems:
+    raise RuntimeError("Deposit verification failed:\n" + "\n".join(problems))
+print(f"Mendeley deposit: {len(expected)} files verified")
+
+# %%
+sources = [
+    {"name": "langhovde-meltwater-replication v1.0.2 (prior chain code)",
+     "doi": "10.5281/zenodo.23257925", "license": "MIT", "checksum": zfile["checksum"]},
+    {"name": "Sugiyama et al. 2026 data deposit (Mendeley Data)", "doi": "10.17632/8wvtxg53ry.1",
+     "license": "CC-BY-4.0", "checksum": "per-file SHA-256 from the Mendeley API, all verified"},
 ]
-
-
-# %% [markdown]
-# ## Download
-
-# %%
-def download_source(source: dict) -> Path:
-    """Fetch a single source into data/raw/. Replace with your real implementation."""
-    # Example skeleton — adapt to your data source's API:
-    # response = requests.get(source["url"], stream=True, timeout=300)
-    # response.raise_for_status()
-    # out_path = RAW_DIR / Path(source["url"]).name
-    # with open(out_path, "wb") as f:
-    #     for chunk in response.iter_content(chunk_size=8192):
-    #         f.write(chunk)
-    # return out_path
-    raise NotImplementedError(
-        "Implement download for: " + source["name"] + ". "
-        "See data/README.md for common patterns."
-    )
-
-
-# %%
-# Uncomment when SOURCES is populated:
-# for source in SOURCES:
-#     print(f"Fetching {source['name']}...")
-#     path = download_source(source)
-#     print(f"  -> {path}")
-
-# %% [markdown]
-# ## Source log
-#
-# Persist the source registry to disk so that downstream notebooks can audit
-# what data was used and when.
-
-# %%
-with open(RAW_DIR / "sources.json", "w") as f:
-    json.dump({"sources": SOURCES}, f, indent=2)
-
-print(f"Logged {len(SOURCES)} source(s) to {RAW_DIR / 'sources.json'}")
+(RAW_DIR / "sources.json").write_text(json.dumps(sources, indent=2))

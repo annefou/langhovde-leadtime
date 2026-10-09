@@ -33,6 +33,10 @@ nbclient = "*"
 ipykernel = "*"
 # --- pipeline driver ---
 snakemake = "*"
+requests = ">=2.34.2,<3"
+pyproj = ">=3.8.0,<4"
+netcdf4 = ">=1.7.4,<2"
+statsmodels = ">=0.15,<0.16"
 # --- replace/extend with the deps your replication needs ---
 # Examples (uncomment as needed):
 # statsmodels = "*"          # GLM/GLMM regression
