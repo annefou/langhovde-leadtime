@@ -1,0 +1,3 @@
+station,band_var_raw,band_var_cm_removed,reduction,label
+GNSS1,0.0005549742294759779,0.01472345018604122,-25.52997095008089,common-mode minor (pre-registered § 8.3)
+GNSS2,0.0005937669981206454,0.012541712707900908,-20.122279863308606,common-mode minor (pre-registered § 8.3)
