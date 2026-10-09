@@ -321,6 +321,52 @@ tidal fit was computed. Still **n = 1**.
 - Labels carry "(n = 1 event, one site)". The Step 6 labels are reported next to
   them, unchanged.
 
+## 8. Step 8 — common-mode test with the other two rovers (added 2026-10-09)
+
+Written after Step 7 and before any LG1 or LGLK data were downloaded or processed.
+Still **n = 1**.
+
+**Question.** Is the ~12 h variability common to all rovers at the same moment
+(GNSS or atmospheric error, e.g. differential troposphere or base-station effects)?
+Or is it station-specific (ice motion)?
+
+**8.1 Processing.**
+- LG1 (GPS-1) and LGLK (GPS-LK), processed exactly as § 6.1 / A4:
+  - JAVAD → RINEX;
+  - kinematic against LGFX;
+  - the same single base position and base ephemeris;
+  - fixed only;
+  - 5 min medians.
+- Windows: LG1 31 Dec – 6 Jan; LGLK 31 Dec – 3 Jan (no files for 4–6 Jan).
+- Stop rule as § 6.1: fix rate and 15 min consistency cannot be checked against a
+  deposit for these stations, so they are reported instead. A day with fix rate below
+  50% is excluded.
+
+**8.2 Common-mode estimate (past and present data only).**
+- For each station and each day: residuals of the 5 min E, N, U positions from a
+  per-day linear fit, then band-passed to 6–18 h periods (zero-phase, FFT; used only
+  for the test statistics in 8.3).
+- Common mode for GNSS1 and GNSS2: the mean of the **LG1 and LGLK** residuals (not
+  band-passed), per component, at the same time stamp. The two rovers are not used
+  for each other, because GNSS2's motion includes real floating-ice signal.
+- Corrected position = position − common mode. This uses simultaneous data only, so
+  it stays past-only.
+
+**8.3 Tests.**
+- Zero-lag correlation of the band-passed E, N and U residuals for every station
+  pair, over the days they share.
+- Band variance (10–15 h) of the centred h = 1 h speed for GNSS1 and GNSS2, 2–6 Jan
+  (2–3 Jan where only LG1 contributes after 3 Jan), before vs after correction:
+  - "common-mode dominant" if it falls by ≥ 50% at both;
+  - "common-mode minor" if < 20% at both;
+  - "mixed" otherwise.
+
+**8.4** If the test is not "common-mode minor", § 6.3–6.5 is rerun on the corrected
+positions (prefix `step8`), with the noise SD from first differences as in § 7.3.
+
+**8.5 Decision on Step 2 of the follow-up** (borehole 3 accelerometer, seismic
+records) is Anne's, after 8.3.
+
 ## Amendments
 
 **A1 — 2026-10-09, before any result was computed.** § 1 specified a one-sided
