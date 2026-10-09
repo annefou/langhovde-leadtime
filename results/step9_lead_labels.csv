@@ -1,0 +1,9 @@
+first,second,proc,n_combinations,n_defined,median_h,min_h,max_h,label,status
+level,speed_GNSS1,causal,32,8,39.6875,8.0,46.25,"indeterminate (n = 1 event, one site)",pre-registered (§ 9.3)
+level,speed_GNSS1,centred,32,16,5.75,-22.0,47.5,"level leads (n = 1 event, one site) — uses future data",pre-registered (§ 9.3)
+level,tilt,causal,32,32,-26.75,-52.25,-24.5,"level lags (n = 1 event, one site)",pre-registered (§ 9.3)
+level,tilt,centred,32,32,-27.625,-51.75,-22.75,"level lags (n = 1 event, one site) — uses future data",pre-registered (§ 9.3)
+level,tiltrate,causal,32,29,-26.5,-31.25,20.5,"level lags (n = 1 event, one site)",pre-registered (§ 9.3)
+level,tiltrate,centred,32,28,-27.625,-39.25,-24.75,"level lags (n = 1 event, one site) — uses future data",pre-registered (§ 9.3)
+tilt,speed_GNSS1,causal,32,8,77.9375,43.25,97.5,"indeterminate (n = 1 event, one site)",pre-registered (§ 9.3)
+tilt,speed_GNSS1,centred,32,16,37.25,11.25,98.75,"tilt leads (n = 1 event, one site) — uses future data",pre-registered (§ 9.3)

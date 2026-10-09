@@ -497,3 +497,16 @@ Result:
 - 100% fixed solutions on 31 Dec – 6 Jan for both rovers (GNSS2 99.9% on 1 Jan);
 - stop rule passed: horizontal SD 5.7 mm (GNSS1) and 3.7 mm (GNSS2) against the
   deposit's 15 min positions (`results/kinematic_consistency.csv`).
+
+**A5 — 2026-10-09, post hoc (after the Step 9 run).** The § 9.3 labels are **not
+interpretable**, and are reported as such:
+- The bed tilt drifts continuously at about 1 mrad h⁻¹ (θ₁ 937, θ₂ 833 µrad h⁻¹ in R),
+  about 11° over six days.
+- So the pre-registered "tilt change from the R mean" grows from the end of R onwards,
+  and every onset falls at the start of S by construction. "Level lags tilt by 27 h"
+  is an artefact.
+- The § 9.2 check passed only because drift and steps inflate the event amplitude.
+- The record also has 13 one-minute steps > 5 mrad (largest 77 mrad, 2 Jan 00:48). Only
+  one (5.7 mrad, 1 Jan 15:55) coincides with a logged logger restart.
+
+No further tilt analysis without a new pre-registration.
