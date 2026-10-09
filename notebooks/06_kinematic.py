@@ -21,7 +21,7 @@
 # LG4 (GNSS2, afloat) against base LGFX (rock), 31 Dec 2021 – 6 Jan 2022.
 #
 # RTKLIB v2.5.1 (`scripts/build_rtklib.sh`):
-# - `convbin -r javad` to RINEX;
+# - `convbin` to RINEX (`-r javad` for the rovers, `-r sbf` for the Septentrio base);
 # - `rnx2rtkp`: relative kinematic, GPS, L1 + L2, mask 15°, ratio 3, continuous
 #   ambiguity resolution, base position = average of its single-point solutions;
 #   output in UTC.
@@ -52,13 +52,14 @@ if not (BIN / "rnx2rtkp").exists():
     subprocess.run(["bash", str(ROOT / "scripts" / "build_rtklib.sh")], check=True)
 
 DAYS = pd.date_range("2021-12-31", "2022-01-06", freq="D")
-STATIONS = {"LG5": ("LG5", "GPS5"), "LG4": ("LG4", "LG04"), "LGFX": ("LGFX", "LGFX")}
+# Rovers are JAVAD receivers; the base LGFX is a Septentrio receiver (SBF format).
+STATIONS = {"LG5": ("LG5", "GPS5", "javad"), "LG4": ("LG4", "LG04", "javad"), "LGFX": ("LGFX", "LGFX", "sbf")}
 ROVERS = {"GNSS1": "LG5", "GNSS2": "LG4"}
 TO_UTM = Transformer.from_crs("EPSG:4326", "EPSG:32737", always_xy=True)
 
 
 def raw_files(station: str, day: pd.Timestamp) -> list[Path]:
-    folder, stem = STATIONS[station]
+    folder, stem, _ = STATIONS[station]
     pat = f"{stem}{day.dayofyear:03d}?.{day.year % 100:02d}"
     return sorted((RAW / folder).glob(pat))
 
@@ -68,7 +69,7 @@ def to_rinex(station: str, day: pd.Timestamp) -> tuple[list[Path], list[Path]]:
     for f in raw_files(station, day):
         o, n = WORK / f"{f.name}.obs", WORK / f"{f.name}.nav"
         if not o.exists():
-            subprocess.run([str(BIN / "convbin"), "-r", "javad", "-o", str(o), "-n", str(n), str(f)],
+            subprocess.run([str(BIN / "convbin"), "-r", STATIONS[station][2], "-o", str(o), "-n", str(n), str(f)],
                            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         obs.append(o)
         nav.append(n)
