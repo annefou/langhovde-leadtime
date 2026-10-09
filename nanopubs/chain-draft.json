@@ -1,0 +1,236 @@
+{
+  "schema_version": "1.0",
+  "kind": "forrt-chain-draft",
+  "chain_shape": "pico",
+  "source": {
+    "repository": "https://github.com/annefou/langhovde-leadtime",
+    "commit": "2f37663aa27a2acbf8702ab1d2fde5493ffbac24",
+    "figure": "figures/main_result.png"
+  },
+  "steps": [
+    {
+      "step": "01_pico",
+      "template_key": "PICO_RESEARCH_QUESTION",
+      "template_uri": "https://w3id.org/np/RA5e5XeXy_-aNK5giB7kBAEQslTLVydHeM4YYEzhmEE2w",
+      "prefill": {
+        "pico": "basal-signals-lead-glacier-acceleration",
+        "label": "Do basal water pressure and uplift give an earlier and better signal of glacier acceleration than ice speed?",
+        "description": "For grounded outlet glaciers whose flow responds to surface meltwater or rain reaching the bed, do observations of the ice–bed boundary (basal water pressure and bed uplift), added to weather and melt observations and the glacier-speed history, predict glacier acceleration earlier and more skilfully than the speed history alone or the speed history with weather and melt? The key question is whether boundary observations change before acceleration, providing genuine lead time, rather than at the same moment as speed. Question proposed by [name to be added with the researcher's agreement].",
+        "type": "https://w3id.org/sciencelive/o/terms/PredictionResearchQuestions",
+        "populationDescription": "Grounded outlet glaciers, at the contact between grounded ice and its bed, during acceleration events driven by surface meltwater or rain reaching the bed.",
+        "interventionGroupDescription": "Observations of the ice–bed boundary — basal water pressure and bed uplift — used together with weather and melt observations and the glacier-speed history.",
+        "comparatorGroupDescription": "The glacier-speed history alone, and the glacier-speed history together with weather and melt observations, without observations of the ice–bed boundary.",
+        "outcomeGroupDescription": "Glacier acceleration: skill in predicting acceleration on events not used to build the prediction, and the lead time between the onset of change at the ice–bed boundary and the onset of acceleration."
+      },
+      "provenance": {
+        "pico": "nanopubs/drafts/01_pico.md",
+        "label": "nanopubs/drafts/01_pico.md",
+        "description": "nanopubs/drafts/01_pico.md",
+        "type": "nanopubs/drafts/01_pico.md",
+        "populationDescription": "nanopubs/drafts/01_pico.md",
+        "interventionGroupDescription": "nanopubs/drafts/01_pico.md",
+        "comparatorGroupDescription": "nanopubs/drafts/01_pico.md",
+        "outcomeGroupDescription": "nanopubs/drafts/01_pico.md"
+      },
+      "manual": [
+        "type"
+      ],
+      "published_uri": null
+    },
+    {
+      "step": "02_aida",
+      "template_key": "AIDA_SENTENCE",
+      "template_uri": "https://w3id.org/np/RALmXhDw3rHcMveTgbv8VtWxijUHwnSqhCmtJFIPKWVaA",
+      "prefill": {
+        "aida": "Basal water pressure at the bed of a grounded glacier rises before the glacier accelerates during a meltwater-driven speed-up.",
+        "topic": [
+          {
+            "uri": "http://www.wikidata.org/entity/Q52120",
+            "label": "glaciology"
+          }
+        ],
+        "st4": [
+          {
+            "publication": "https://doi.org/10.1038/s41467-026-72724-x"
+          }
+        ]
+      },
+      "provenance": {
+        "aida": "nanopubs/drafts/02_aida.md",
+        "topic": "nanopubs/drafts/02_aida.md + Wikidata",
+        "st4": "nanopubs/drafts/02_aida.md"
+      },
+      "published_uri": null
+    },
+    {
+      "step": "03_claim",
+      "template_key": "FORRT_CLAIM",
+      "template_uri": "https://w3id.org/np/RAZWyM8D16ya3S1zhCvrG1f0iSpd9-8onVWp0FTvvX7LQ",
+      "prefill": {
+        "claim": "basal-pressure-rises-before-acceleration",
+        "label": "Basal water pressure rises before grounded-glacier acceleration (lead time of basal signals)",
+        "forrtType": "https://w3id.org/sciencelive/o/terms/descriptive_pattern-FORRT-Claim",
+        "source": "https://doi.org/10.1038/s41467-026-72724-x"
+      },
+      "provenance": {
+        "claim": "nanopubs/drafts/03_claim.md",
+        "label": "nanopubs/drafts/03_claim.md",
+        "forrtType": "nanopubs/drafts/03_claim.md",
+        "source": "CITATION.cff"
+      },
+      "manual": [
+        "forrtType"
+      ],
+      "published_uri": null
+    },
+    {
+      "step": "04_study",
+      "template_key": "FORRT_REPLICATION",
+      "template_uri": "https://w3id.org/np/RAuLEjPp-4dTvPwMkfHggTto1CgjIftiGRAgHlyeEonjQ",
+      "prefill": {
+        "study": "langhovde-basal-lead-time-2022",
+        "label": "Lead time of basal water pressure before glacier acceleration, Langhovde Glacier, January 2022 (exploratory, one event)",
+        "type": "https://w3id.org/sciencelive/o/terms/Replication-Study",
+        "scope": "Whether basal water pressure (and bed uplift) changes before the acceleration of grounded ice, tested on the one meltwater- and rain-driven speed-up at Langhovde Glacier, East Antarctica, that was observed with basal pressure, GNSS and weather together: 2–6 January 2022 (summer 2021/22).\n- In scope: the order and separation in time of the onsets of rain and melt, basal water pressure, bed uplift, bed tilt, and the speed and acceleration of a grounded and a floating GNSS station; the lead–lag structure between these series; and a descriptive version of the proposed comparison of three nested models (speed history; plus weather and melt; plus basal pressure and uplift).\n- Out of scope: the proposed held-out prediction across events. It needs several events with basal pressure, and this record has one, so it could not be run. Also out of scope: other glaciers or seasons, and the physical mechanism linking pressure and sliding.",
+        "methodology": "Exploratory analysis of one event, pre-registered step by step before each computation, with dated amendments.\nData:\n- the Sugiyama et al. (2026) deposit (Mendeley Data, doi:10.17632/8wvtxg53ry.1): 15 min GNSS positions, 1 min borehole pressure (BH2201), 10 min weather;\n- raw field data at the NIPR Arctic Data archive System (CC BY 4.0): 1 s GNSS from five receivers (A20220506-004), on-glacier air pressure (A20220506-001), and a 100 Hz accelerometer in borehole BH2201 (A20220506-002).\nThe deposit is parsed with the code of the earlier reproduction (doi:10.5281/zenodo.23257925).\nProcessing:\n- The raw GNSS is processed kinematically with RTKLIB 2.5.1 against a reference receiver on rock: forward filter only, so that no future data are used; GPS L1+L2; integer ambiguities fixed; checked against the published 15 min positions.\n- Basal pressure is corrected with the measured air pressure.\n- Every series is smoothed three ways: centred, causal (past data only) and robust causal Gaussian local-linear regression, at several bandwidths. Speed comes from the smoothed positions; acceleration from the speed.\nAnalysis:\n- Onsets are defined by declared rules (threshold exceedance at 2, 3 and 5 standard deviations of a pre-event day, persisting for 1 h; and a hinge change-point fit).\n- Leads are computed for every rule, bandwidth and reference window. A pre-registered majority rule with a 1 h tolerance labels each pair: basal leads, simultaneous, basal lags or indeterminate.\n- The detection delay of each causal speed estimator is measured on synthetic onsets with the observed noise and subtracted.\n- Further steps: lagged cross-correlation; lagged regressions for the three nested models, with rolling-origin and event hold-out evaluation; tests of the sub-daily speed variability (sidereal filtering for GNSS multipath, a tidal regression fitted before the event, a common-mode comparison with two further GNSS receivers); and bed-tilt series from the borehole accelerometer.",
+        "deviation": "There is no original methodology to reproduce: the question, and the three-model held-out test, were proposed by [name to be added with the researcher's agreement], who had not run it.\nDeviations from that proposed test:\n- one event only, so no held-out prediction across events (descriptive onset timing, lead–lag and a one-event hold-out instead);\n- speed and uplift come from GNSS positions smoothed with the processing of the earlier reproduction, extended with past-only (causal) and robust variants;\n- post hoc amendments, each dated and recorded:\n  - the same smoother for all series;\n  - a robust causal fit, after single-epoch GNSS outliers dominated the causal speed;\n  - one base position and the base receiver's broadcast ephemeris in the kinematic processing;\n  - bed-tilt onset labels withdrawn because the sensor was still settling.",
+        "keywordSelection": [
+          {
+            "uri": "http://www.wikidata.org/entity/Q6486120",
+            "label": "Langhovde Glacier"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q3962812",
+            "label": "Basal sliding"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q179435",
+            "label": "global navigation satellite system"
+          }
+        ],
+        "disciplineSelection": {
+          "uri": "http://www.wikidata.org/entity/Q52120",
+          "label": "glaciology"
+        }
+      },
+      "provenance": {
+        "study": "nanopubs/drafts/04_study.md",
+        "label": "nanopubs/drafts/04_study.md",
+        "type": "nanopubs/drafts/04_study.md",
+        "scope": "nanopubs/drafts/04_study.md",
+        "methodology": "nanopubs/drafts/04_study.md",
+        "deviation": "nanopubs/drafts/04_study.md",
+        "keywordSelection": "nanopubs/drafts/04_study.md + Wikidata",
+        "disciplineSelection": "nanopubs/drafts/04_study.md + Wikidata"
+      },
+      "manual": [
+        "type"
+      ],
+      "published_uri": null
+    },
+    {
+      "step": "05_outcome",
+      "template_key": "FORRT_REPLICATION_OUTCOME",
+      "template_uri": "https://w3id.org/np/RA2zljn0Nw9SadppOyxZoh-_Rxosslrq-vYG-p9SttnJE",
+      "prefill": {
+        "outcome": "langhovde-basal-lead-time-2022-outcome",
+        "label": "Basal pressure vs acceleration onsets at Langhovde Glacier, January 2022: inconclusive (one event)",
+        "repo": "https://doi.org/10.5281/zenodo.23266427",
+        "date": "2026-10-09",
+        "validationStatus": "https://w3id.org/sciencelive/o/terms/Inconclusive",
+        "conclusion": "This record cannot tell whether basal water pressure rises before grounded-ice acceleration. The claim is therefore neither supported nor contradicted.\nWhat is clear:\n- In the one instrumented event (2–6 January 2022), rain and melt came first: rain began at 01:50 UTC on 2 January, and the basal pressure rise followed about 19 h later in every processing.\nWhat is not clear:\n- The order of pressure and acceleration depends on the processing.\n  - Centred smoothing of the published 15 min GNSS puts the speed rise about 8 h before the pressure rise.\n  - The same smoothing of the reprocessed 1 s GNSS puts pressure about 6 h before speed.\n  - Every past-only (causal) estimate is indeterminate, with spreads of more than ±10 h.\nWhy sharper data did not resolve it:\n- The grounded and floating trunk stations share a ~12 h variability in speed that is larger than the event's speed-up. It is mostly not GNSS multipath and not a simple tidal response.\n- The borehole tilt sensor was still settling.\nThe proposed held-out comparison of three nested models needs several events. In a single-event hold-out, adding basal pressure and uplift did not improve on weather and speed history.",
+        "evidence": "Basal pressure and forcing:\n- BH2201 basal water level peaked at 51.0 m a.s.l. (97% of flotation) at 23:07 UTC on 3 January 2022; 50.95 m after the measured air-pressure correction.\n- Rain led the pressure rise by a median of 18.6–18.9 h (causal) and 20.8–23.4 h (centred), in 30–32 of 32 rule × bandwidth × reference combinations.\nPressure to GNSS1 (grounded) speed, onset leads (positive = pressure first):\n- 15 min deposit:\n  - centred median −8.0 h (\"level lags\", 20 of 30 combinations);\n  - robust causal median +0.6 h, 13 earlier and 13 later (\"indeterminate\").\n- 1 s kinematic GNSS (100% fixed; 5.7 mm and 3.7 mm horizontal SD against the published 15 min positions):\n  - centred median +5.75 h (\"level leads\", 16 of 32 combinations defined);\n  - robust causal, corrected for detection delay, median +3.6 h, range −7.6 to +36.1 h, 13 of 32 defined (\"indeterminate\");\n  - after sidereal filtering and tidal correction, still \"indeterminate\" (median +4.9 to +6.8 h).\n- Detection delay of the causal speed estimators on synthetic onsets: 3.0–8.9 h (15 min data); 3.4 h (1 s data, h = 3 h).\nSub-daily variability at GNSS1:\n- 12–13 h period, SD 0.047 m/d at h = 1 h, against an event speed-up of about 0.03 m/d (12.5%).\n- Sidereal filtering removed 14% (GNSS1) and 32% (GNSS2) of the 10–15 h variance.\n- A tidal model fitted before the event explained R² = 0.001 and 0.07 afterwards.\n- GNSS1 and GNSS2 band-passed (6–18 h) residuals correlate at r = 0.97 (east), 0.72 (north) and 0.84 (up). GNSS1 and receiver LG1 correlate at 0.17, 0.23 and 0.00.\nBed tilt and nested models:\n- Bed tilt in BH2201 drifted about 0.9 mrad/h, with 13 steps above 5 mrad (largest 77 mrad).\n- Nested models, one-event hold-out at GNSS1 (h = 3 h): skill of the pressure-and-uplift model relative to weather-and-speed was −0.24, −0.05 and −0.01 at 1, 3 and 6 h horizons.\n- Rolling-origin forecasts began only after the event onset.",
+        "confidenceLevel": "https://w3id.org/sciencelive/o/terms/LowConfidence",
+        "limitations": "- One event, at one site, in one season. No conclusion about lead time in general, or at other glaciers, can be drawn.\n- The proposed predictive test was not run. The lead labels describe this event only.\n- Basal pressure comes from one borehole, about 190 m from the grounded GNSS station.\n- Onset times depend on the smoothing and the onset rule. All combinations are reported, not a chosen one.\n- The origin of the ~12 h speed variability is not established: real trunk motion is likely, but differential troposphere cannot be excluded. What the two extra GNSS receivers stand on is not documented in the archive.\n- The bed-tilt sensor was settling (drift and steps), so its onsets were withdrawn. The tilt-rate change during the pressure rise and the stick-slip-like steps after the peak are post hoc observations, not tested.\n- Several steps were amended after results were seen (dated in ANALYSIS_PLAN.md)."
+      },
+      "provenance": {
+        "outcome": "nanopubs/drafts/05_outcome.md",
+        "label": "nanopubs/drafts/05_outcome.md",
+        "repo": "CITATION.cff",
+        "date": "CITATION.cff",
+        "validationStatus": "nanopubs/drafts/05_outcome.md",
+        "conclusion": "nanopubs/drafts/05_outcome.md",
+        "evidence": "nanopubs/drafts/05_outcome.md",
+        "confidenceLevel": "nanopubs/drafts/05_outcome.md",
+        "limitations": "nanopubs/drafts/05_outcome.md"
+      },
+      "manual": [
+        "validationStatus",
+        "confidenceLevel"
+      ],
+      "published_uri": null
+    },
+    {
+      "step": "06_citation",
+      "template_key": "CITATION_CITO",
+      "template_uri": "https://w3id.org/np/RA43F9EoOuzF0xoNUnCMNyFsfIqlsuWDdPHCnN0wCdCAw",
+      "prefill": {
+        "st02": [
+          {
+            "cites": "http://purl.org/spar/cito/discusses",
+            "cited": "https://doi.org/10.1038/s41467-026-72724-x"
+          },
+          {
+            "cites": "http://purl.org/spar/cito/extends",
+            "cited": "https://w3id.org/sciencelive/np/RAQn6_6v0w8OARZmzh0BBV8maDh_dqNHBlYmgwzNMwGyo"
+          },
+          {
+            "cites": "http://purl.org/spar/cito/credits",
+            "cited": "https://doi.org/10.5281/zenodo.23257925"
+          },
+          {
+            "cites": "http://purl.org/spar/cito/citesAsDataSource",
+            "cited": "https://doi.org/10.17632/8wvtxg53ry.1"
+          },
+          {
+            "cites": "http://purl.org/spar/cito/citesAsDataSource",
+            "cited": "https://ads.nipr.ac.jp/dataset/A20220506-004"
+          },
+          {
+            "cites": "http://purl.org/spar/cito/citesAsDataSource",
+            "cited": "https://ads.nipr.ac.jp/dataset/A20220506-001"
+          },
+          {
+            "cites": "http://purl.org/spar/cito/citesAsDataSource",
+            "cited": "https://ads.nipr.ac.jp/dataset/A20220506-002"
+          },
+          {
+            "cites": "http://purl.org/spar/cito/usesMethodIn",
+            "cited": "https://doi.org/10.1007/s10291-006-0038-4"
+          }
+        ]
+      },
+      "provenance": {
+        "st02": "cites = nanopubs/drafts/06_citation.md; cited = CITATION.cff references[article]; further rows = nanopubs/drafts/06_citation.md"
+      },
+      "published_uri": null
+    }
+  ],
+  "carry_forward": [
+    {
+      "from": "01_pico",
+      "into": "02_aida",
+      "field": "project"
+    },
+    {
+      "from": "02_aida",
+      "into": "03_claim",
+      "field": "aida"
+    },
+    {
+      "from": "03_claim",
+      "into": "04_study",
+      "field": "claim"
+    },
+    {
+      "from": "04_study",
+      "into": "05_outcome",
+      "field": "study"
+    },
+    {
+      "from": "05_outcome",
+      "into": "06_citation",
+      "field": "work"
+    }
+  ]
+}

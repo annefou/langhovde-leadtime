@@ -85,7 +85,7 @@ Analysis:
 What's different from the original method. Verify against the actual code, don't guess.
 
 ```
-There is no original methodology to reproduce: the question, and the three-model held-out test, were proposed by {{RESEARCHER_CREDIT}}, who had not run it.
+There is no original methodology to reproduce: the question, and the three-model held-out test, were proposed by [name to be added with the researcher's agreement], who had not run it.
 Deviations from that proposed test:
 - one event only, so no held-out prediction across events (descriptive onset timing, lead–lag and a one-event hold-out instead);
 - speed and uplift come from GNSS positions smoothed with the processing of the earlier reproduction, extended with past-only (causal) and robust variants;

@@ -41,7 +41,7 @@ Do basal water pressure and uplift give an earlier and better signal of glacier 
 One coherent sentence/paragraph that names P, I, C, O inline.
 
 ```
-For grounded outlet glaciers whose flow responds to surface meltwater or rain reaching the bed, do observations of the ice–bed boundary (basal water pressure and bed uplift), added to weather and melt observations and the glacier-speed history, predict glacier acceleration earlier and more skilfully than the speed history alone or the speed history with weather and melt? The key question is whether boundary observations change before acceleration, providing genuine lead time, rather than at the same moment as speed. Question proposed by {{RESEARCHER_CREDIT}}.
+For grounded outlet glaciers whose flow responds to surface meltwater or rain reaching the bed, do observations of the ice–bed boundary (basal water pressure and bed uplift), added to weather and melt observations and the glacier-speed history, predict glacier acceleration earlier and more skilfully than the speed history alone or the speed history with weather and melt? The key question is whether boundary observations change before acceleration, providing genuine lead time, rather than at the same moment as speed. Question proposed by [name to be added with the researcher's agreement].
 ```
 
 <!-- field: type -->
