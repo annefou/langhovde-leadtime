@@ -17,48 +17,58 @@ FIGURES = "figures"
 
 rule all:
     input:
-        # Replace with your actual final artefacts:
         f"{FIGURES}/main_result.png",
-        f"{RESULTS}/summary.csv",
+        f"{RESULTS}/lead_labels.csv",
 
 
-# ---------- 01: Data download ----------
-# Every replication MUST be self-contained: data is downloaded by the notebook,
-# never assumed to exist locally. See CLAUDE.md § Self-contained data.
 rule data_download:
     output:
-        f"{DATA}/raw/dataset.zip",
+        f"{DATA}/raw/sources.json",
+        f"{DATA}/raw/prior_v1.0.2/notebooks/gnss.py",
     log:
         f"{RESULTS}/logs/01_data_download.log",
     shell:
         f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 01_data_download.py 2>&1 | tee ../{{log}}"
 
 
-# ---------- 02: Data clean ----------
 rule data_clean:
     input:
-        f"{DATA}/raw/dataset.zip",
+        f"{DATA}/raw/sources.json",
     output:
-        f"{DATA}/clean/dataset.parquet",
+        expand(f"{DATA}/clean/{{f}}.nc", f=["gnss_GNSS1", "gnss_GNSS2", "pressure_BH2201", "aws"]),
+    log:
+        f"{RESULTS}/logs/02_data_clean.log",
     shell:
-        f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 02_data_clean.py"
+        f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 02_data_clean.py 2>&1 | tee ../{{log}}"
 
 
-# ---------- 03: Analysis ----------
 rule analysis:
     input:
-        f"{DATA}/clean/dataset.parquet",
+        expand(f"{DATA}/clean/{{f}}.nc", f=["gnss_GNSS1", "gnss_GNSS2", "pressure_BH2201", "aws"]),
+        f"{NOTEBOOKS}/leadtime.py",
     output:
-        f"{RESULTS}/summary.csv",
+        f"{RESULTS}/series_15min.nc",
+        f"{RESULTS}/onsets.csv",
+        f"{RESULTS}/leads.csv",
+        f"{RESULTS}/lead_labels.csv",
+        f"{RESULTS}/xcorr.csv",
+        f"{RESULTS}/nested_models.csv",
+        f"{RESULTS}/robust_delay_check.csv",
+    log:
+        f"{RESULTS}/logs/03_analysis.log",
     shell:
-        f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 03_analysis.py"
+        f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 03_analysis.py 2>&1 | tee ../{{log}}"
 
 
-# ---------- 04: Figures ----------
 rule figures:
     input:
-        f"{RESULTS}/summary.csv",
+        f"{RESULTS}/series_15min.nc",
+        f"{RESULTS}/onsets.csv",
+        f"{RESULTS}/leads.csv",
+        f"{RESULTS}/robust_delay_check.csv",
     output:
         f"{FIGURES}/main_result.png",
+    log:
+        f"{RESULTS}/logs/04_figures.log",
     shell:
-        f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 04_figures.py"
+        f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 04_figures.py 2>&1 | tee ../{{log}}"

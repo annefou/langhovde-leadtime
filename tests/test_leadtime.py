@@ -92,3 +92,19 @@ def test_xcorr_sign_convention():
     y = x.shift(12)  # y is x delayed by 3 h: x leads y
     r = xcorr(x, y, (str(idx[0]), str(idx[-1])), 24)
     assert r.idxmax() == 12
+
+
+def test_robust_causal_fit_ignores_a_single_outlier_and_the_future():
+    from leadtime import robust_causal_fit
+    t = np.arange(0, 3, 1 / 96)
+    x = 0.25 * t + rng.normal(0, 0.005, t.size)
+    i = 200
+    x_out = x.copy()
+    x_out[i] += 0.075
+    ti = t[i:i + 1]
+    a, b = robust_causal_fit(t, x_out, ti, 3 / 24)
+    a0, b0 = robust_causal_fit(t, x, ti, 3 / 24)
+    assert abs(a[0] - a0[0]) < 0.01 and abs(b[0] - 0.25) < 0.1
+    x_fut = x_out.copy()
+    x_fut[i + 1:] += 1.0
+    assert robust_causal_fit(t, x_fut, ti, 3 / 24)[0] == pytest.approx(a)

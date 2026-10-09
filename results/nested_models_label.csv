@@ -1,0 +1,3 @@
+proc,status,rule,skill_H1,skill_H3,skill_H6,label
+causal,pre-registered,"M3 vs M2, 4c, GNSS1, h=3",-0.2388874497086788,-0.04997472112485246,-0.012109571708459166,M3 does not add information here (n = 1)
+causal-robust,post hoc (A3),"M3 vs M2, 4c, GNSS1, h=3",-0.6330189765468688,-0.9191524745086912,-0.32017118287848745,M3 does not add information here (n = 1)

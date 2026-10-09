@@ -38,7 +38,7 @@ sys.path.insert(0, str(PRIOR / "notebooks"))
 from gnss import (AUTHORS_FIG3, GnssSettings, _difference, find_segments,  # noqa: E402  (v1.0.2, unmodified)
                   local_regression, process_track)
 from leadtime import (backward_rate, onset_changepoint, onset_threshold,  # noqa: E402
-                      smooth_on_grid, xcorr)
+                      robust_causal_on_grid, smooth_on_grid, xcorr)
 
 CLEAN = Path("../data/clean")
 RESULTS = Path("../results")
@@ -46,7 +46,7 @@ RESULTS.mkdir(exist_ok=True)
 BANDWIDTHS = [1, 3, 6, 12]
 STEP_H = 0.25
 GRID = pd.date_range("2021-12-19 15:00", "2022-02-06 06:00", freq="15min")
-PROCS = ["centred", "causal"]
+PROCS = ["centred", "causal", "causal-robust"]  # causal-robust: amendment A3, post hoc
 GRID_D = (GRID.values - GRID.values[0]) / np.timedelta64(1, "D")
 
 # %% [markdown]
@@ -116,6 +116,7 @@ def gnss_series(st: str, h: float) -> dict[str, np.ndarray]:
     t = g.time.values
     x, y, z = (g[k].values - g[k].values[0] for k in ("x", "y", "z"))
     cx, cy, cz = (smooth_on_grid(t, v, GRID, h, causal=True) for v in (x, y, z))
+    (_, rsx), (_, rsy), (rz, _) = (robust_causal_on_grid(t, v, GRID, h) for v in (x, y, z))
     px, py = (centred_on_grid(t, v, st, h) for v in (x, y))
     scheme = prior_settings(st, h).scheme
     return {
@@ -123,6 +124,8 @@ def gnss_series(st: str, h: float) -> dict[str, np.ndarray]:
         f"uplift_{st}_centred": centred_on_grid(t, z, st, h),
         f"speed_{st}_causal": np.hypot(backward_rate(cx, STEP_H), backward_rate(cy, STEP_H)),
         f"uplift_{st}_causal": cz,
+        f"speed_{st}_causal-robust": np.hypot(rsx, rsy),
+        f"uplift_{st}_causal-robust": rz,
         "_check": c,
     }
 
@@ -158,9 +161,10 @@ for h in BANDWIDTHS:
             v = series[f"speed_{st}_{proc}_h{h}"].to_numpy()
             series[f"accel_{st}_{proc}_h{h}"] = pd.Series(backward_rate(v, STEP_H, lag), index=GRID)
     for name, (t, v) in forcing.items():
-        for proc in PROCS:
+        for proc in ("centred", "causal"):
             series[f"{name}_{proc}_h{h}"] = pd.Series(
                 smooth_on_grid(t, v, GRID, h, causal=proc == "causal"), index=GRID)
+        series[f"{name}_causal-robust_h{h}"] = series[f"{name}_causal_h{h}"]  # not robustified (A3)
         series[f"{name}_causal-const_h{h}"] = pd.Series(
             smooth_on_grid(t, v, GRID, h, causal=True, degree=0), index=GRID)
 series["level_raw"] = pd.Series(level.reindex(GRID, method="ffill", tolerance=pd.Timedelta("2min")).to_numpy(), index=GRID)
@@ -176,6 +180,39 @@ ds.attrs = {"title": "Centred and causal series, 15 min UTC grid (ANALYSIS_PLAN.
 ds.to_netcdf(RESULTS / "series_15min.nc")
 
 # %% [markdown]
+# **A3 check: does the robust fit delay onsets?** Synthetic northing track at 15 min:
+# 0.23 m d⁻¹, then a speed ramp to 0.33 m d⁻¹ over 24 h from a known onset, plus white
+# noise with the observed per-epoch scatter (SD of 15 min increments / √2) and one
+# 7.5 cm single-epoch outlier per realisation outside the event. 50 realisations.
+
+# %%
+def synthetic_delay(h: float, n_real: int = 50, seed: int = 1) -> dict:
+    rng = np.random.default_rng(seed)
+    idx = pd.date_range("2022-01-01", "2022-01-05", freq="15min")
+    onset = pd.Timestamp("2022-01-03 00:00")
+    td = ((idx - idx[0]) / pd.Timedelta("1D")).to_numpy()
+    ton = (onset - idx[0]) / pd.Timedelta("1D")
+    u = np.clip(td - ton, 0, 1)
+    pos = 0.23 * td + 0.10 * np.where(td > ton, np.where(u < 1, u ** 2 / 2, u - 0.5), 0)
+    sd = float(np.diff(gnss["GNSS1"].y.sel(time=slice("2022-01-01", "2022-01-12")).values).std() / np.sqrt(2))
+    out = {"causal": [], "causal-robust": []}
+    for _ in range(n_real):
+        y = pos + rng.normal(0, sd, td.size)
+        y[rng.integers(100, 180)] += 0.075
+        sp_c = pd.Series(np.abs(backward_rate(smooth_on_grid(idx.values, y, idx, h, causal=True), STEP_H)), index=idx)
+        sp_r = pd.Series(np.abs(robust_causal_on_grid(idx.values, y, idx, h)[1]), index=idx)
+        for k, sp in (("causal", sp_c), ("causal-robust", sp_r)):
+            cpo = onset_changepoint(sp, "2022-01-01 00:00", ("2022-01-02 00:00", "2022-01-04 12:00"))
+            out[k].append((cpo[0] - onset) / pd.Timedelta("1h") if cpo else np.nan)
+    return {"h": h, "noise_sd_m": sd, **{f"cp_delay_median_h_{k}": np.nanmedian(v) for k, v in out.items()},
+            **{f"cp_delay_iqr_h_{k}": float(np.subtract(*np.nanpercentile(v, [75, 25]))) for k, v in out.items()}}
+
+
+delay = pd.DataFrame([synthetic_delay(h) for h in BANDWIDTHS])
+delay.to_csv(RESULTS / "robust_delay_check.csv", index=False)
+print(delay.round(2).to_string(index=False))
+
+# %% [markdown]
 # Peak shift between centred and causal processing, Period II (2–6 Jan).
 
 # %%
@@ -184,9 +221,9 @@ BASE_VARS = ["tpos", "rain", "level", "uplift_GNSS1", "speed_GNSS1", "speed_GNSS
 rows = []
 for var in BASE_VARS:
     for h in BANDWIDTHS:
-        t = {proc: series[f"{var}_{proc}_h{h}"][P2[0]:P2[1]].idxmax() for proc in PROCS}
-        rows.append({"series": var, "h": h, "peak_centred": t["centred"], "peak_causal": t["causal"],
-                     "causal_minus_centred_h": (t["causal"] - t["centred"]) / pd.Timedelta("1h")})
+        t = {proc: series[f"{var}_{proc}_h{h}"][P2[0]:P2[1]].dropna().idxmax() for proc in PROCS}
+        rows.append({"series": var, "h": h, **{f"peak_{p}": t[p] for p in PROCS},
+                     **{f"{p}_minus_centred_h": (t[p] - t["centred"]) / pd.Timedelta("1h") for p in PROCS[1:]}})
 peak_shift = pd.DataFrame(rows)
 peak_shift.to_csv(RESULTS / "peak_shift.csv", index=False)
 print(peak_shift.to_string(index=False))
@@ -294,6 +331,7 @@ def label(d: pd.DataFrame) -> pd.Series:
 
 
 labels = (leads[leads.rule.isin(RULES)].groupby(["basal_or_forcing", "endpoint", "proc"]).apply(label).reset_index())
+labels["status"] = np.where(labels.proc == "causal-robust", "post hoc (A3)", "pre-registered")
 labels.to_csv(RESULTS / "lead_labels.csv", index=False)
 print(labels.to_string(index=False))
 
@@ -331,11 +369,11 @@ LAGS_H = [0, 3, 6]
 MODELS = {"M1": ["v"], "M2": ["v", "tpos", "rain"], "M3": ["v", "tpos", "rain", "level", "uplift_GNSS1"]}
 
 
-def design(target_st: str, h: int, H: int) -> pd.DataFrame:
+def design(target_st: str, h: int, H: int, proc: str) -> pd.DataFrame:
     hourly_idx = GRID[GRID.minute == 0]
-    src = {"v": series[f"speed_{target_st}_causal_h{h}"]}
+    src = {"v": series[f"speed_{target_st}_{proc}_h{h}"]}
     for k in ["tpos", "rain", "level", "uplift_GNSS1"]:
-        src[k] = series[f"{k}_causal_h{h}"]
+        src[k] = series[f"{k}_{proc}_h{h}"]
     cols = {}
     for k, s in src.items():
         for lag in LAGS_H:
@@ -364,18 +402,20 @@ def rmse(e: np.ndarray) -> float:
 WIN_FIT = {"GNSS1": WINDOWS["W2"], "GNSS2": WINDOWS["W3"]}
 TEST_4C = ("2022-01-01 00:00", "2022-01-06 12:00")
 rows = []
-for st in ["GNSS1", "GNSS2"]:
-    for h in BANDWIDTHS:
+for proc, st, h in [(p, st, h) for p in ("causal", "causal-robust") for st in ["GNSS1", "GNSS2"] for h in BANDWIDTHS]:
+    if True:
         cp = onsets.set_index(["period", "series", "proc", "h", "ref", "rule"]).onset
-        e_on = cp.get(("II", f"speed_{st}", "causal", h, "R", "CP"))
-        e_pk = cp.get(("II", f"speed_{st}", "causal", h, "R", "peak"))
+        e_on = cp.get(("II", f"speed_{st}", proc, h, "R", "CP"))
+        e_pk = cp.get(("II", f"speed_{st}", proc, h, "R", "peak"))
+        e_on = None if pd.isna(e_on) else e_on
+        e_pk = None if pd.isna(e_pk) else e_pk
         for H in [1, 3, 6]:
-            d = design(st, h, H)
+            d = design(st, h, H, proc)
             dw = d[WIN_FIT[st][0]:WIN_FIT[st][1]]
             # 4a: in-sample, same rows for all models
             for m in MODELS:
                 r = fit(dw, m)
-                rows.append({"part": "4a", "station": st, "h": h, "H": H, "model": m, "n_train": len(dw),
+                rows.append({"part": "4a", "proc": proc, "station": st, "h": h, "H": H, "model": m, "n_train": len(dw),
                              "r2": r.rsquared, "r2_adj": r.rsquared_adj, "aic": r.aic, "bic": r.bic})
             # 4b: rolling origin, expanding window
             preds = {m: [] for m in MODELS}
@@ -393,7 +433,7 @@ for st in ["GNSS1", "GNSS2"]:
             in_p2 = (origins >= P2[0]) & (origins < "2022-01-06")
             for m in MODELS:
                 e = np.array(preds[m]) - truth
-                rows.append({"part": "4b", "station": st, "h": h, "H": H, "model": m,
+                rows.append({"part": "4b", "proc": proc, "station": st, "h": h, "H": H, "model": m,
                              "first_origin": origins.min() if len(origins) else None, "n_test": len(e),
                              "event_onset_cp": e_on, "onset_before_first_origin": bool(len(origins) and e_on is not None and e_on < origins.min()),
                              "rmse": rmse(e), "rmse_period2": rmse(e[in_p2]), "n_test_period2": int(in_p2.sum())})
@@ -404,7 +444,7 @@ for st in ["GNSS1", "GNSS2"]:
             onset_part = test[(e_on - pd.Timedelta("12h")):e_pk] if e_on is not None and e_pk is not None else test.iloc[:0]
             for m in MODELS:
                 r = fit(train, m)
-                rows.append({"part": "4c", "station": st, "h": h, "H": H, "model": m, "n_train": len(train),
+                rows.append({"part": "4c", "proc": proc, "station": st, "h": h, "H": H, "model": m, "n_train": len(train),
                              "n_test": len(test), "rmse": rmse(predict(r, test, m) - test.y),
                              "n_test_onset": len(onset_part),
                              "rmse_onset": rmse(predict(r, onset_part, m) - onset_part.y) if len(onset_part) else np.nan})
@@ -414,20 +454,21 @@ for part in ["4b", "4c"]:
         if col not in nm:
             continue
         sel = nm.part == part
-        key = nm.loc[sel, ["station", "h", "H"]].astype(str).agg("|".join, axis=1)
+        key = nm.loc[sel, ["proc", "station", "h", "H"]].astype(str).agg("|".join, axis=1)
         base = nm.loc[sel].assign(k=key).set_index(["k", "model"])[col]
         for ref_m in ["M1", "M2"]:
             nm.loc[sel, f"skill_{col}_vs_{ref_m}"] = [
                 1 - base[(k, m)] / base[(k, ref_m)] for k, m in zip(key, nm.loc[sel, "model"])]
 nm.to_csv(RESULTS / "nested_models.csv", index=False)
 
-d4 = nm[(nm.part == "4c") & (nm.station == "GNSS1") & (nm.h == 3) & (nm.model == "M3")].set_index("H")
-s_m3 = d4["skill_rmse_vs_M2"]
-adds = s_m3.loc[3] > 0.10 and all(np.sign(s_m3.loc[[1, 6]]) == np.sign(s_m3.loc[3]))
-print("4c skill of M3 vs M2 (GNSS1, h = 3 h) by horizon:", s_m3.round(3).to_dict())
-print("Pre-registered label:", ("M3 adds information here" if adds else "M3 does not add information here"),
-      "(n = 1 event, one site; not a held-out test across events)")
-pd.DataFrame([{"rule": "M3 vs M2, 4c, GNSS1, h=3", **{f"skill_H{H}": s_m3.loc[H] for H in [1, 3, 6]},
-               "label": ("M3 adds information here" if adds else "M3 does not add information here") + " (n = 1)"}]
-             ).to_csv(RESULTS / "nested_models_label.csv", index=False)
+lab_rows = []
+for proc in ("causal", "causal-robust"):
+    d4 = nm[(nm.part == "4c") & (nm.proc == proc) & (nm.station == "GNSS1") & (nm.h == 3) & (nm.model == "M3")].set_index("H")
+    s_m3 = d4["skill_rmse_vs_M2"]
+    adds = s_m3.loc[3] > 0.10 and all(np.sign(s_m3.loc[[1, 6]]) == np.sign(s_m3.loc[3]))
+    lab = ("M3 adds information here" if adds else "M3 does not add information here") + " (n = 1)"
+    print(f"[{proc}] 4c skill of M3 vs M2 (GNSS1, h = 3 h):", s_m3.round(3).to_dict(), "->", lab)
+    lab_rows.append({"proc": proc, "status": "pre-registered" if proc == "causal" else "post hoc (A3)",
+                     "rule": "M3 vs M2, 4c, GNSS1, h=3", **{f"skill_H{H}": s_m3.loc[H] for H in [1, 3, 6]}, "label": lab})
+pd.DataFrame(lab_rows).to_csv(RESULTS / "nested_models_label.csv", index=False)
 print(nm[nm.part != "4a"].round(4).to_string(index=False))

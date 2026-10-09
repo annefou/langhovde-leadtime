@@ -81,6 +81,61 @@ def smooth_on_grid(time: np.ndarray, values: np.ndarray, grid: pd.DatetimeIndex,
     return out
 
 
+def robust_causal_fit(t: np.ndarray, x: np.ndarray, ti: np.ndarray, h: float, min_history: float = 0.0,
+                      c: float = 4.685, iters: int = 5) -> tuple[np.ndarray, np.ndarray]:
+    """One-sided Gaussian-kernel local linear fit with bisquare reweighting (A3).
+
+    Returns (intercept, slope) at ti; slope in x-units per t-unit. Scale is
+    1.4826·MAD of the residuals of samples with kernel weight ≥ 0.01.
+    """
+    t, x, ti = (np.asarray(a, dtype=float) for a in (t, x, ti))
+    ok = np.isfinite(t) & np.isfinite(x)
+    t, x = t[ok], x[ok]
+    order = np.argsort(t)
+    t, x = t[order], x[order]
+    lo = np.searchsorted(t, ti - 8 * h, side="left")
+    hi = np.searchsorted(t, ti, side="right")
+    a_out, b_out = np.full(ti.size, np.nan), np.full(ti.size, np.nan)
+    for k, t0 in enumerate(ti):
+        tt, xx = t[lo[k]:hi[k]], x[lo[k]:hi[k]]
+        if tt.size < 3 or t0 - tt[0] < min_history:
+            continue
+        d = tt - t0
+        wk = np.exp(-0.5 * (d / h) ** 2)
+        near = wk >= 0.01
+        X = np.column_stack([np.ones_like(d), d])
+        wr = np.ones_like(d)
+        for _ in range(iters + 1):
+            sw = np.sqrt(wk * wr)
+            beta, *_ = np.linalg.lstsq(X * sw[:, None], xx * sw, rcond=None)
+            r = xx - X @ beta
+            scale = 1.4826 * np.median(np.abs(r[near] - np.median(r[near]))) if near.sum() >= 3 else 0.0
+            if scale <= 0:
+                break
+            u = r / (c * scale)
+            wr = np.where(np.abs(u) < 1, (1 - u ** 2) ** 2, 0.0)
+        a_out[k], b_out[k] = beta
+    return a_out, b_out
+
+
+def robust_causal_on_grid(time: np.ndarray, values: np.ndarray, grid: pd.DatetimeIndex, h_hours: float,
+                          max_gap_h: float = 12.0, min_history_h: float = 1.0
+                          ) -> tuple[np.ndarray, np.ndarray]:
+    """`robust_causal_fit` segment by segment on `grid`: (level, slope per day)."""
+    time = np.asarray(time, dtype="datetime64[ns]")
+    values = np.asarray(values, dtype=float)
+    g = grid.values.astype("datetime64[ns]")
+    t0 = g[0]
+    lvl, slope = np.full(g.size, np.nan), np.full(g.size, np.nan)
+    for a, b in segments(time, max_gap_h):
+        sel = (time >= a) & (time <= b)
+        gi = (g >= a) & (g <= b)
+        if gi.any():
+            lvl[gi], slope[gi] = robust_causal_fit(_days(time[sel], t0), values[sel], _days(g[gi], t0),
+                                                   h_hours / 24, min_history_h / 24)
+    return lvl, slope
+
+
 def backward_rate(x: np.ndarray, step_h: float, lag_steps: int = 1) -> np.ndarray:
     """(x(t) − x(t − lag)) / lag per day, using only the past."""
     out = np.full(x.size, np.nan)
