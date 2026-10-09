@@ -323,7 +323,9 @@ tidal fit was computed. Still **n = 1**.
 
 ## 8. Step 8 — common-mode test with the other two rovers (added 2026-10-09)
 
-Written after Step 7 and before any LG1 or LGLK data were downloaded or processed.
+Written after Step 7. The LG1/LGLK download started a minute before this was committed;
+no LG1 or LGLK data had been opened or processed (correction made at 2026-10-09,
+see git history).
 Still **n = 1**.
 
 **Question.** Is the ~12 h variability common to all rovers at the same moment
