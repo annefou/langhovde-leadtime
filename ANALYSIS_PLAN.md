@@ -319,3 +319,22 @@ outlier. Those results stay reported, labelled as such. A third processing,
 - Steps 2–4 are run for causal-robust with the same rules, windows and decision rules.
   The Step 4 label is also computed on causal-robust. Every causal-robust result is
   labelled post hoc.
+
+**A4 — 2026-10-09, post hoc (after the first kinematic runs; no onset or lead result
+from the NIPR data had been computed).** The § 6.1 stop rule failed in the first two
+runs (horizontal SD 21–26 cm). Two causes, both fixed:
+1. *Implementation error.* The code let RTKLIB re-estimate the base position for each
+   daily run. § 6.1 specifies one position for the whole window. Now: the mean of
+   LGFX's single-point solutions over 31 Dec – 6 Jan (20 160 epochs at 30 s), passed
+   with `-r`.
+2. *Data issue.* The JAVAD rover navigation files flag most satellites unhealthy
+   (svh = 01) in alternate 2 h ephemeris blocks. This gave about 67% fixed solutions
+   and at least one wrong fix (2 m, 3 Jan 22:30, GNSS1). Now: the broadcast ephemeris
+   comes from the base (Septentrio) receiver's file. That is still "broadcast
+   ephemeris", as § 6.1 states.
+
+The base is a Septentrio receiver (SBF, firmware 4.8.2), converted with `-r sbf`.
+Result:
+- 100% fixed solutions on 31 Dec – 6 Jan for both rovers (GNSS2 99.9% on 1 Jan);
+- stop rule passed: horizontal SD 5.7 mm (GNSS1) and 3.7 mm (GNSS2) against the
+  deposit's 15 min positions (`results/kinematic_consistency.csv`).

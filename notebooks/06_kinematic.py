@@ -23,8 +23,8 @@
 # RTKLIB v2.5.1 (`scripts/build_rtklib.sh`):
 # - `convbin` to RINEX (`-r javad` for the rovers, `-r sbf` for the Septentrio base);
 # - `rnx2rtkp`: relative kinematic, GPS, L1 + L2, mask 15°, ratio 3, continuous
-#   ambiguity resolution, base position = average of its single-point solutions;
-#   output in UTC.
+#   ambiguity resolution, one base position for the whole window (mean of the base's
+#   single-point solutions), broadcast ephemeris from the base receiver; output in UTC.
 #
 # The filter runs **forward only** (no `-c` combined solution), so each position uses
 # only past and present epochs. It is processed day by day, so the filter restarts at
@@ -77,6 +77,35 @@ def to_rinex(station: str, day: pd.Timestamp) -> tuple[list[Path], list[Path]]:
 
 
 # %% [markdown]
+# ## Base position: one value for the whole window (§ 6.1)
+#
+# Mean ECEF of LGFX's single-point solutions over all days. Passed to every run with
+# `-r`, so that daily runs share one base position. (RTKLIB's default re-estimates it
+# for each run, which put day-to-day steps of up to 1.6 m into the first run.)
+
+# %%
+def base_ecef() -> tuple[float, float, float]:
+    xyz = []
+    for day in DAYS:
+        b_obs, b_nav = to_rinex("LGFX", day)
+        out = WORK / f"LGFX_{day:%Y%m%d}_single.pos"
+        if not out.exists():
+            subprocess.run([str(BIN / "rnx2rtkp"), "-p", "0", "-m", "15", "-sys", "G", "-e", "-ti", "30",
+                            "-o", str(out), *map(str, b_obs), str(b_nav[0])],
+                           check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        for ln in out.read_text().splitlines():
+            if ln and not ln.startswith("%"):
+                f = ln.split()
+                xyz.append([float(f[2]), float(f[3]), float(f[4])])
+    xyz = np.array(xyz)
+    print(f"LGFX single-point epochs: {len(xyz)}; SD (m): {xyz.std(axis=0).round(2)}")
+    return tuple(xyz.mean(axis=0))
+
+
+BASE = base_ecef()
+print("base ECEF (m):", [round(v, 3) for v in BASE])
+
+# %% [markdown]
 # ## Conversion and kinematic processing, one rover-day at a time
 
 # %%
@@ -85,7 +114,10 @@ def process_day(rover: str, day: pd.Timestamp) -> Path | None:
     if out.exists():
         return out
     r_obs, r_nav = to_rinex(rover, day)
-    b_obs, _ = to_rinex("LGFX", day)
+    # Broadcast ephemeris from the base (Septentrio) file: the JAVAD rover navigation
+    # files flag most satellites unhealthy (svh=01) in alternate 2 h ephemeris blocks,
+    # which cut the fix rate to about 67 %. With the base file: about 100 %.
+    b_obs, b_nav = to_rinex("LGFX", day)
     if not r_obs or not b_obs:
         print(f"{rover} {day:%Y-%m-%d}: missing rover or base files")
         return None
@@ -94,10 +126,10 @@ def process_day(rover: str, day: pd.Timestamp) -> Path | None:
     for i, ro in enumerate(r_obs):
         part = WORK / f"{rover}_{day:%Y%m%d}_{i}.pos"
         cmd = [str(BIN / "rnx2rtkp"), "-p", "2", "-m", "15", "-sys", "G", "-f", "2", "-v", "3",
-               "-u", "-t", "-d", "1",
+               "-u", "-t", "-d", "1", "-r", *map(str, BASE),
                "-ts", f"{day:%Y/%m/%d}", "00:00:00",
                "-te", f"{day:%Y/%m/%d}", "23:59:59",
-               "-o", str(part), str(ro), *map(str, b_obs), str(r_nav[i])]
+               "-o", str(part), str(ro), *map(str, b_obs), str(b_nav[0])]
         subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         parts.append(part)
     out.write_text("".join(p.read_text() for p in parts))
