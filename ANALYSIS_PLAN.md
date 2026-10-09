@@ -273,6 +273,54 @@ The same rule is reported for GNSS1 acceleration, GNSS2 speed and centred proces
 **6.6 Not in Step 6.** Borehole 3 (A20220506-002) is pre-registered separately after
 its format has been inspected. LG1 and LGLK are not used.
 
+## 7. Step 7 — the ~12 h variability: GNSS multipath or tide? (added 2026-10-09)
+
+Written after Step 6 showed ~12–13 h speed variability, larger than the event
+signal, in the kinematic GNSS (`SUMMARY_PRIVATE.md`, Step 6). Before any filtering or
+tidal fit was computed. Still **n = 1**.
+
+**7.1 Sidereal filter (multipath test).**
+- Input: fixed 1 s kinematic positions (notebook 06), as 30 s medians (bins need
+  ≥ 15 epochs).
+- Template: residuals from a per-day linear fit (x, y, z separately) on the
+  **pre-event days 31 Dec and 1 Jan only**. Each day is aligned to the target time by
+  whole multiples of the GPS repeat period T = 86 154 s (Agnew & Larson 2007; 86 164 s
+  as a sensitivity case), linearly interpolated onto the 30 s grid, and averaged over
+  the available template days.
+- The template uses only data from before 2 Jan, so the filtered series stays
+  past-only.
+- Filtered position = position − template, for 1–6 Jan. Then 5 min medians, as in
+  § 6.1.
+- **Test:** band variance (10–15 h periods) of GNSS1 and GNSS2 centred speed at h = 1 h
+  over 2–6 Jan, before vs after filtering.
+  - "multipath dominant" if the variance falls by ≥ 50% at both stations;
+  - "multipath minor" if it falls by < 20% at both;
+  - "mixed" otherwise.
+
+**7.2 Tidal regression (tide test).**
+- Tide: deposit `tide.nc`, shifted to UTC by −2.75 h (v1.0.2), as 15 min means.
+- Model, for each station (on the 7.1-filtered series):
+  speed_h1(t) = a + b·η(t − ℓ) + c·dη/dt(t − ℓ), with ℓ scanned over −6 to +6 h
+  in 15 min steps.
+- Fit on **31 Dec 12:00 – 2 Jan 00:00** (pre-event; 31 Dec unfiltered, because it is
+  a template day). Evaluate R² on **5 Jan 00:00 – 6 Jan 23:45** (held out, after the
+  event).
+- **Test:** "tide explains the sub-daily variability" if the held-out R² ≥ 0.25 at
+  both stations; "weak" if R² < 0.10 at both; "mixed" otherwise.
+
+**7.3 Onsets on the cleaned series.**
+- § 6.3–6.5 (same rules, windows, bandwidths, delay correction and decision rule)
+  rerun on:
+  - (a) sidereal-filtered positions;
+  - (b) sidereal-filtered and tide-corrected speed: the fitted 7.2 model, at the
+    pre-event fit's best lag, is subtracted from speed at each h. Because it was
+    fitted on pre-event data only, this stays past-only.
+- The 6.4 delay check is repeated with the noise SD from **first differences** of the
+  filtered 5 min positions (/√2). This avoids the A4-era problem of real sub-daily
+  signal inflating the noise estimate. The detrended SD is reported alongside.
+- Labels carry "(n = 1 event, one site)". The Step 6 labels are reported next to
+  them, unchanged.
+
 ## Amendments
 
 **A1 — 2026-10-09, before any result was computed.** § 1 specified a one-sided
