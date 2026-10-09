@@ -5,9 +5,9 @@
 > Run the pre-flight checklist in `docs/forrt-form-fields.md` § Pre-flight checklist before drafting.
 >
 > **Chain shape:** question-rooted (PICO), chosen by Anne on 2026-10-09. The question was
-> proposed by an external researcher in private correspondence; their credit is the
-> unresolved token `{{RESEARCHER_CREDIT}}`, which blocks publication until they have
-> agreed and Anne has decided how to credit them (`DISCOVERY.md`).
+> proposed by an external researcher; their credit is the unresolved token
+> `{{RESEARCHER_CREDIT}}`, which blocks publication until they have agreed on how to
+> be credited.
 >
 > Template (live, checked 2026-10-09): https://w3id.org/np/RA5e5XeXy_-aNK5giB7kBAEQslTLVydHeM4YYEzhmEE2w
 > Fields: pico, label, description, type, populationDescription,

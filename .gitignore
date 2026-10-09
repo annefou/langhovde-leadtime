@@ -65,3 +65,8 @@ docker-image.tar.gz
 # Local scratch — a Claude Code session-resume helper, never part of a study.
 claude-resume.txt
 .tools/
+
+# Private working notes (kept outside the public repository)
+DISCOVERY.md
+SUMMARY_PRIVATE.md
+NOTE_FOR_RESEARCHER.md

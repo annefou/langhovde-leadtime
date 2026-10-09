@@ -6,7 +6,7 @@
 
 > Template fields (live 2026-10-09): outcome, label, study (filled by the wizard), repo, date, validationStatus, conclusion, evidence, confidenceLevel, limitations (optional).
 >
-> `repo` keeps the token `{{ZENODO_VERSION_DOI}}`: this repository is private and unreleased. A release, if Anne goes public, supplies the version DOI.
+> `repo` keeps the token `{{ZENODO_VERSION_DOI}}` until the v1.0.0 release mints the version DOI (recorded in `CITATION.cff` by the release-identifiers workflow).
 >
 > Confidence: the Science Live vocabulary is phrased as agreement with an original. "low — limited evidence" is the closest fit to a one-event, inconclusive result. Anne to confirm.
 >

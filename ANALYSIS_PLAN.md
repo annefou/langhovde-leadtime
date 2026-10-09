@@ -1,5 +1,7 @@
 # Analysis plan: lead time of basal signals before glacier acceleration (exploratory, n = 1)
 
+> **Note added 2026-10-09, when the repository was made public.** `DISCOVERY.md` and `SUMMARY_PRIVATE.md`, referred to below, are the author's private working notes. They are not part of the public repository; their findings are summarised in `README.md`. The text below is unchanged.
+
 Written and committed on 2026-10-09, **before any lead-time, onset, correlation or model
 result was computed**. Only data inspection had been done: sampling intervals, data gaps
 and variable units of the inputs listed in § 0. The prior chain's published numbers
