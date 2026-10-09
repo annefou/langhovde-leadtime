@@ -221,3 +221,27 @@ Also, v1.0.2's grid starts at each segment's first fix (GNSS1 from
 2021-12-25 12:20:50, off the quarter-hour). The centred series therefore call v1.0.2
 `local_regression` and `_difference` directly at the UTC grid times. This was a
 plumbing fix and changes no setting.
+
+**A3 — 2026-10-09, post hoc, chosen by Anne after the first run and before the
+robust results were computed.** The raw GNSS positions contain single-epoch outliers
+that jump and revert at the next fix (e.g. +7.5 cm northing at GNSS1 on
+2022-01-03 11:00; 14 cm vertical at GNSS2 on 2022-01-02 18:45). The centred smoother
+averages them out. In the causal fit the newest sample sits at the endpoint, where it
+has the most leverage, so each outlier becomes a speed spike (3.3 m d⁻¹ at h = 1 h,
+against a background of 0.23). The pre-registered causal GNSS onsets are mostly
+undefined, and the few "pressure leads speed by 3–5 h" results come from that one
+outlier. Those results stay reported, labelled as such. A third processing,
+**causal-robust**, is added:
+- GNSS x, y, z: one-sided Gaussian-kernel local linear fit with bisquare reweighting
+  (c = 4.685, scale = 1.4826 × MAD of the residuals of samples with kernel weight
+  ≥ 0.01, 5 iterations). It uses only past samples.
+- Speed = horizontal magnitude of the fitted **slope** (not 15 min differences).
+  Uplift = fitted intercept of z. Acceleration as in § 1, from this speed.
+- BH2201 and the AWS series are **not** robustified: their causal-robust series are
+  the causal series. A bisquare fit would down-weight the first samples of a sharp,
+  real rise, delaying exactly the onsets being compared.
+- Check (reported): on a synthetic hinge with the GNSS noise level, the onset delay
+  of the robust fit relative to the non-robust one, per h.
+- Steps 2–4 are run for causal-robust with the same rules, windows and decision rules.
+  The Step 4 label is also computed on causal-robust. Every causal-robust result is
+  labelled post hoc.
