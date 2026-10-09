@@ -63,7 +63,8 @@ jobs:
       - name: Execute notebooks
         if: steps.guard.outputs.ready == 'true'
         run: |
-          for nb in notebooks/0[1-4]_*.ipynb; do
+          # Glob: executes every notebook converted above (only 01-04 are).
+          for nb in notebooks/*.ipynb; do
             echo "::group::Executing $nb"
             pixi run jupyter execute --inplace "$nb"
             echo "::endgroup::"
