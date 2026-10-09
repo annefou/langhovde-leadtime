@@ -199,6 +199,80 @@ here), and the candidate data sources listed in `DISCOVERY.md`.
 
 Every result is labelled pre-registered or post hoc.
 
+## 6. Step 6 — sharper timing from the raw NIPR data (added 2026-10-09)
+
+Written **before any NIPR data were processed**. Inspection only:
+- file listings and sizes;
+- the ADS metadata PDF (all stations 1 s; GPS-FIX on rock about 4 km from GPS-5);
+- one LG4 day converted to RINEX to check the format (JAVAD; GPS L1/L2/L5, 86 400
+  epochs per day; receiver and antenna type blank);
+- the AWS file's columns.
+
+Data: ADS A20220506-004 (GNSS) and A20220506-001 (AWS), Sugiyama, Minowa, Kondo & Aoki
+(2022), CC BY 4.0. The embargo ended on 2024-05-05 (catalogue `open_date`); Anne
+checked access and licence. Station names: GPS-5 = LG5 = GNSS1 (grounded); GPS-4 = LG4
+= GNSS2 (afloat); GPS-FIX = LGFX (reference on rock).
+
+Still **n = 1 event**. Step 6 sharpens the timing of Period II; it cannot make the
+predictive test possible.
+
+**6.1 Kinematic GNSS.**
+- Tools: RTKLIB v2.5.1 (rtklibexplorer fork; tarball SHA-256 pinned in
+  `scripts/build_rtklib.sh`). `convbin -r javad` to RINEX; `rnx2rtkp` relative
+  kinematic, rover LG5 or LG4 against base LGFX.
+- Settings: GPS only, L1 + L2, elevation mask 15°, broadcast ephemeris, continuous
+  ambiguity resolution (ratio threshold 3), base position fixed to the mean of its own
+  single-point solutions over the window (an absolute offset of the base cancels in
+  velocity). Output 1 s positions in UTC (`-u`).
+- Window: 2021-12-31 00:00 to 2022-01-07 00:00 UTC (pre-event reference plus
+  Period II).
+- Quality: only fixed solutions (Q = 1) are kept. The fix rate is reported per day. If
+  the fix rate is below 50% on any day of 2–4 Jan, float solutions (Q = 2) are added
+  as a sensitivity case, not as the primary series.
+- Positions to UTM 37S as in v1.0.2, then averaged to **5 min** bins (median of the
+  fixed 1 s epochs, bin needs ≥ 150 epochs). The 5 min series is the input to
+  everything below.
+- **Consistency check (stop rule):** 15 min means of the kinematic positions vs the
+  deposit's 15 min positions (Mendeley `LG05.dat`, `LG04.dat`). Detrended differences
+  must have SD ≤ 5 cm horizontally. Otherwise processing stops and is reviewed.
+
+**6.2 Measured air-pressure correction.** BH2201 level =
+(p − 9.2 − (p_air − p̄_air)/100) × 1.0197 − 436.1. Here p_air is the AWS `AirPress`
+(hPa), interpolated to the logger times, and p̄_air is its mean over the BH2201
+record. This keeps v1.0.2's calibration constant and removes barometric variation.
+The uncorrected v1.0.2 series is reported alongside.
+
+**6.3 Same analysis, sharper input.**
+- Steps 1–3 (centred, causal, causal-robust; onsets T2, T3, T5, CP and the peak;
+  references R and R′; leads; cross-correlation) on the kinematic GNSS1 and GNSS2
+  series.
+- Bandwidths **h = 0.25, 0.5, 1, 3 h** (the shorter bandwidths are what the
+  1 s data are for).
+- Same 15 min analysis grid and windows as § 2–3. The 5 min series feed the
+  smoothers.
+
+**6.4 Detection-delay check at the new noise level.**
+- The A3 synthetic check is repeated with the noise SD measured from the 5 min
+  kinematic positions (detrended, 1–2 Jan), for each h and each processing
+  (causal, causal-robust).
+- Its median delay d(h, processing) is reported.
+
+**6.5 Decision rule for Step 6 (causal-robust primary; set now, before results).**
+For the pair BH2201 level (6.2) → GNSS1 speed:
+- **"basal leads"**: lead − d(h) > 1 h in more than half of the rule × h × reference
+  combinations where both onsets exist (the lead must exceed the method's own delay);
+- **"simultaneous within resolution"**: |lead − d(h)| ≤ 1 h in more than half;
+- **"basal lags"**: lead − d(h) < −1 h in more than half;
+- **"indeterminate"** otherwise, or if fewer than half the combinations give both
+  onsets.
+
+The same rule is reported for GNSS1 acceleration, GNSS2 speed and centred processing
+(centred with d = 0, labelled "uses future data"). Every label carries
+"(n = 1 event, one site)". The uncorrected d = 0 version is reported alongside.
+
+**6.6 Not in Step 6.** Borehole 3 (A20220506-002) is pre-registered separately after
+its format has been inspected. LG1 and LGLK are not used.
+
 ## Amendments
 
 **A1 — 2026-10-09, before any result was computed.** § 1 specified a one-sided
