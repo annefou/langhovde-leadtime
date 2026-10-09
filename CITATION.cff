@@ -9,8 +9,8 @@ authors:
     affiliation: "LifeWatch ERIC"
 repository-code: "https://github.com/annefou/langhovde-leadtime"
 license: MIT
-version: "0.1.0"
-date-released: "2026-10-06"
+version: "1.0.0"
+date-released: "2026-10-09"
 # Identifiers below are recorded AUTOMATICALLY on each release by
 # .github/workflows/release-identifiers.yml — don't fill them in by hand.
 #

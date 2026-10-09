@@ -3,9 +3,9 @@
   "@type": "SoftwareSourceCode",
   "name": "langhovde-leadtime",
   "description": "Exploratory follow-up to the published FORRT chain on Sugiyama et al. (2026): do basal water pressure and uplift change before glacier acceleration at Langhovde Glacier?",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "dateCreated": "2026-10-06",
-  "dateModified": "2026-10-06",
+  "dateModified": "2026-10-09",
   "license": "https://spdx.org/licenses/MIT",
   "codeRepository": "https://github.com/annefou/langhovde-leadtime",
   "identifier": "{{ZENODO_DOI}}",
@@ -15,7 +15,10 @@
     "name": "Python",
     "version": "3.12"
   },
-  "operatingSystem": ["Linux", "macOS"],
+  "operatingSystem": [
+    "Linux",
+    "macOS"
+  ],
   "author": [
     {
       "@type": "Person",
