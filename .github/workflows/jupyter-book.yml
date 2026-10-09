@@ -54,15 +54,16 @@ jobs:
       - name: Convert .py notebooks to .ipynb
         if: steps.guard.outputs.ready == 'true'
         run: |
-          for nb in notebooks/*.py; do
+          # Only the book's notebooks (01-04, deposit-based pipeline). Notebooks
+          # 05-10 need ~7 GB of NIPR downloads and RTKLIB; they are run locally.
+          for nb in notebooks/0[1-4]_*.py; do
             pixi run jupytext --to notebook "$nb"
           done
 
-      # Glob, not a hard-coded list — new notebooks are picked up automatically.
       - name: Execute notebooks
         if: steps.guard.outputs.ready == 'true'
         run: |
-          for nb in notebooks/*.ipynb; do
+          for nb in notebooks/0[1-4]_*.ipynb; do
             echo "::group::Executing $nb"
             pixi run jupyter execute --inplace "$nb"
             echo "::endgroup::"

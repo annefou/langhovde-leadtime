@@ -10,6 +10,7 @@ project:
   license: MIT
   toc:
     - file: index.md
+    - file: ANALYSIS_PLAN.md
     - file: notebooks/01_data_download.ipynb
     - file: notebooks/02_data_clean.ipynb
     - file: notebooks/03_analysis.ipynb
