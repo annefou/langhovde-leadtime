@@ -48,12 +48,12 @@ GRID15 = pd.date_range("2021-12-31", "2022-01-07", freq="15min", inclusive="left
 
 
 def raw_format(path: Path) -> str:
-    """'sbf' for Septentrio (starts with '$@'), 'javad' for JAVAD JPS (starts with 'MF')."""
+    """'sbf' for Septentrio (starts with '$@'), 'javad' for JAVAD JPS ('MF' or '~~')."""
     with open(path, "rb") as fh:
         head = fh.read(2)
     if head == b"$@":
         return "sbf"
-    if head == b"MF":
+    if head in (b"MF", b"~~"):  # JAVAD file header, or a split file starting with a JAVAD message
         return "javad"
     raise ValueError(f"unknown raw format: {path}")
 
