@@ -6,7 +6,7 @@
 
 > Template fields (live 2026-10-09): outcome, label, study (filled by the wizard), repo, date, validationStatus, conclusion, evidence, confidenceLevel, limitations (optional).
 >
-> `repo` keeps the token `{{ZENODO_VERSION_DOI}}` until the v1.0.0 release mints the version DOI (recorded in `CITATION.cff` by the release-identifiers workflow).
+> `repo` is the v1.0.0 version DOI (10.5281/zenodo.23266427, from `CITATION.cff`).
 >
 > Confidence: the Science Live vocabulary is phrased as agreement with an original. "low — limited evidence" is the closest fit to a one-event, inconclusive result. Anne to confirm.
 >
@@ -60,7 +60,7 @@ bare branch URL, and not the concept DOI.
 > the one described as *"Version DOI"*.
 
 ```
-https://doi.org/{{ZENODO_VERSION_DOI}}
+https://doi.org/10.5281/zenodo.23266427
 ```
 
 <!-- field: date -->

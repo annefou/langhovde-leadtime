@@ -101,16 +101,20 @@ Deviations from that proposed test:
 
 Provide labels (not QIDs) — the Wikidata search picks up labels.
 
-- Langhovde Glacier (Q6486120, glacier in Antarctica)
-- Basal sliding (Q3962812)
-- global navigation satellite system (Q179435)
+Checked with wikidata_lookup on 2026-10-09: Q6486120, Q3962812, Q179435.
+
+- Langhovde Glacier
+- Basal sliding
+- global navigation satellite system
 
 <!-- field: discipline -->
 ### Search discipline (Wikidata) (search/select, optional)
 
 Provide labels.
 
-- glaciology (Q52120; Wikidata types it as a field of study, not an academic discipline)
+Q52120; Wikidata types it as a field of study, not an academic discipline.
+
+- glaciology
 
 ## Publication note
 
