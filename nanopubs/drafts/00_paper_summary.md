@@ -2,13 +2,13 @@
 
 > This is a working scratchpad for the paper-analysis phase. The output of this file feeds the Quote / AIDA / Claim drafts. It is not itself a nanopub.
 
-**Reference paper:** {{PAPER_TITLE}}
+**Reference paper:** Acceleration of an Antarctic outlet glacier driven by surface meltwater input to the base
 
-**DOI:** {{PAPER_DOI}}
+**DOI:** 10.1038/s41467-026-72724-x
 
 **Authors:** _add._
 
-**Year:** {{PAPER_YEAR}}
+**Year:** 2026
 
 ## Headline claim
 
