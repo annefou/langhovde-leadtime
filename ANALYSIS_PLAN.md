@@ -209,3 +209,15 @@ constant fit is the check. Reason: a one-sided local-constant kernel lags a line
 by h·√(2/π) ≈ 0.8 h, whereas the local linear fit does not. Using it for pressure but
 not for GNSS would have delayed pressure relative to speed by construction, biasing the
 comparison against the basal series.
+
+**A2 — 2026-10-09, post hoc (after the first run).** The § 1 check "centred 15 min
+track equals the v1.0.2 hourly track to 1 mm d⁻¹ in speed" failed at h = 1 h
+(0.14 m d⁻¹) and h = 3 h (1.7 mm d⁻¹) and passed at 6 and 12 h. Positions and uplift
+agree to 0 mm at every h, so the smoothing is identical. The speed difference comes
+from differencing over ± 15 min instead of ± 1 h, which matters only when h is short.
+The check is kept and reported as failed (`results/step0_centred_check.csv`). The speed
+part of the criterion was mis-specified: it compared two different difference steps.
+Also, v1.0.2's grid starts at each segment's first fix (GNSS1 from
+2021-12-25 12:20:50, off the quarter-hour). The centred series therefore call v1.0.2
+`local_regression` and `_difference` directly at the UTC grid times. This was a
+plumbing fix and changes no setting.
