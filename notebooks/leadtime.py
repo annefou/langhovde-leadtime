@@ -224,3 +224,37 @@ def xcorr(x: pd.Series, y: pd.Series, window: tuple[str, str], max_lag_steps: in
         ok = np.isfinite(a) & np.isfinite(b)
         out[lag] = np.corrcoef(a[ok], b[ok])[0, 1] if ok.sum() > 10 else np.nan
     return pd.Series(out)
+
+
+# ---------- detection-delay check (A3, § 6.4) ----------
+
+def synthetic_onset_delay(h_hours: float, noise_sd: float, sample_min: float, proc: str,
+                          n_real: int = 50, seed: int = 1, grid_min: float = 15.0,
+                          outlier: float = 0.0) -> np.ndarray:
+    """Change-point onset delay (h) of a known speed ramp, per noise realisation.
+
+    Northing: 0.23 m/d, then a ramp to 0.33 m/d over 24 h from 2022-01-03 00:00.
+    White noise of `noise_sd` (m) at `sample_min` sampling, optionally one outlier.
+    Speed on a `grid_min` grid: 'causal' = backward difference of the causal fit,
+    'causal-robust' = slope of the robust causal fit.
+    """
+    rng = np.random.default_rng(seed)
+    t_obs = pd.date_range("2022-01-01", "2022-01-05", freq=f"{sample_min}min")
+    grid = pd.date_range("2022-01-01", "2022-01-05", freq=f"{grid_min}min")
+    onset = pd.Timestamp("2022-01-03")
+    td = ((t_obs - t_obs[0]) / pd.Timedelta("1D")).to_numpy()
+    ton = (onset - t_obs[0]) / pd.Timedelta("1D")
+    u = np.clip(td - ton, 0, 1)
+    pos = 0.23 * td + 0.10 * np.where(td > ton, np.where(u < 1, u ** 2 / 2, u - 0.5), 0)
+    out = []
+    for _ in range(n_real):
+        y = pos + rng.normal(0, noise_sd, td.size)
+        if outlier:
+            y[rng.integers(td.size // 4, td.size // 2)] += outlier
+        if proc == "causal":
+            sp = np.abs(backward_rate(smooth_on_grid(t_obs.values, y, grid, h_hours, causal=True), grid_min / 60))
+        else:
+            sp = np.abs(robust_causal_on_grid(t_obs.values, y, grid, h_hours)[1])
+        cp = onset_changepoint(pd.Series(sp, index=grid), "2022-01-01 00:00", ("2022-01-02 00:00", "2022-01-04 12:00"))
+        out.append((cp[0] - onset) / pd.Timedelta("1h") if cp else np.nan)
+    return np.array(out)
