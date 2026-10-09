@@ -8,8 +8,12 @@
   "dateModified": "2026-10-09",
   "license": "https://spdx.org/licenses/MIT",
   "codeRepository": "https://github.com/annefou/langhovde-leadtime",
-  "identifier": "{{ZENODO_DOI}}",
-  "@id": "{{ZENODO_DOI}}",
+  "identifier": [
+    "https://doi.org/10.5281/zenodo.23266426",
+    "https://doi.org/10.5281/zenodo.23266427",
+    "swh:1:rev:dbbc0274ae9ce1793d07a508bafae9c3aaea552e;origin=https://github.com/annefou/langhovde-leadtime"
+  ],
+  "@id": "https://doi.org/10.5281/zenodo.23266426",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "Python",
