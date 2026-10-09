@@ -201,4 +201,11 @@ Every result is labelled pre-registered or post hoc.
 
 ## Amendments
 
-(none yet)
+**A1 — 2026-10-09, before any result was computed.** § 1 specified a one-sided
+local-constant kernel (weighted mean) for BH2201 and the AWS series, with the local
+linear fit as a check. Swapped: **all series use the same Gaussian-kernel local linear
+fit** (v1.0.2 `local_regression` centred; its one-sided version causal), and the local
+constant fit is the check. Reason: a one-sided local-constant kernel lags a linear ramp
+by h·√(2/π) ≈ 0.8 h, whereas the local linear fit does not. Using it for pressure but
+not for GNSS would have delayed pressure relative to speed by construction, biasing the
+comparison against the basal series.
