@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "langhovde-leadtime"
+title: "langhovde-leadtime: does the ice–bed boundary give an earlier signal of glacier acceleration? (Langhovde Glacier, exploratory)"
 message: "If you use this software, please cite it as below."
 type: software
 authors:
@@ -31,7 +31,14 @@ identifiers:
   # On release, the workflow adds:
   #   - type: doi   value: <version DOI>  "Version DOI for vX.Y.Z — pins this exact release; cite this from nanopubs"
   #   - type: swh   value: swh:1:rev:<commit>;origin=<repo>  "Software Heritage ID of the vX.Y.Z source tree"
+abstract: "Exploratory, pre-registered test of whether basal water pressure and uplift change before glacier acceleration at Langhovde Glacier, East Antarctica (one event, January 2022). It uses the Sugiyama et al. (2026) deposit and raw 1 s GNSS, air pressure and borehole accelerometer data from the NIPR Arctic Data archive System. The result is inconclusive. The research question was proposed by an external researcher. The code was developed by the author with an AI coding agent."
 keywords:
+  - glaciology
+  - Langhovde Glacier
+  - subglacial hydrology
+  - basal water pressure
+  - GNSS
+  - lead time
   - replication
   - reproducibility
   - FORRT
@@ -58,3 +65,56 @@ references:
     title: "Langhovde Glacier meltwater-acceleration FORRT chain (reproduction and partial replication of Sugiyama et al. 2026; PartiallySupported) — CiTO Citation"
     url: "https://w3id.org/sciencelive/np/RAQrTZ5QeyY91Q8JcXIaK1agI4ZnaU1wPvFBa8MfP4NR4"
     notes: "Apex CiTO Citation of the prior FORRT chain this replication extends. Re-run `/import-from-nanopub <URL>` to repopulate nanopubs/imported/ locally."
+  - type: dataset
+    title: "Field data from Langhovde Glacier and MATLAB code for plotting"
+    authors:
+      - family-names: "Sugiyama"
+        given-names: "Shin"
+    year: "2026"
+    doi: "10.17632/8wvtxg53ry.1"
+  - type: dataset
+    title: "GNSS data obtained by field campaign in Langhovde Glacier during December 2021-February 2022."
+    authors:
+      - family-names: "Sugiyama"
+        given-names: "Shin"
+      - family-names: "Minowa"
+        given-names: "Masahiro"
+      - family-names: "Kondo"
+        given-names: "Ken"
+      - family-names: "Aoki"
+        given-names: "Shigeru"
+    year: "2022"
+    url: "https://ads.nipr.ac.jp/dataset/A20220506-004"
+  - type: dataset
+    title: "Subglacial water pressure and acceleration data obtained by field campaign in Langhovde Glacier during December 2021-February 2022."
+    authors:
+      - family-names: "Sugiyama"
+        given-names: "Shin"
+      - family-names: "Minowa"
+        given-names: "Masahiro"
+      - family-names: "Kondo"
+        given-names: "Ken"
+      - family-names: "Aoki"
+        given-names: "Shigeru"
+    year: "2022"
+    url: "https://ads.nipr.ac.jp/dataset/A20220506-002"
+  - type: dataset
+    title: "Meteorological data obtained by field campaign in Langhovde Glacier during December 2021-February 2022."
+    authors:
+      - family-names: "Sugiyama"
+        given-names: "Shin"
+      - family-names: "Minowa"
+        given-names: "Masahiro"
+      - family-names: "Kondo"
+        given-names: "Ken"
+      - family-names: "Aoki"
+        given-names: "Shigeru"
+    year: "2022"
+    url: "https://ads.nipr.ac.jp/dataset/A20220506-001"
+  - type: software
+    title: "langhovde-meltwater-replication"
+    authors:
+      - family-names: "Fouilloux"
+        given-names: "Anne"
+    version: "v1.0.2"
+    doi: "10.5281/zenodo.23257925"
