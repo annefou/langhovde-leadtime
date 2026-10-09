@@ -84,7 +84,7 @@ def sidereal_filter(p: pd.DataFrame, T: float) -> pd.DataFrame:
         for n in range(1, 7):
             src_t = ((r.index + pd.Timedelta(seconds=n * T)) - tgt.index[0]).total_seconds().to_numpy()
             # only template days strictly before the target day
-            ok_day = (tgt.index.floor("D") > tday).to_numpy()
+            ok_day = np.asarray(tgt.index.floor("D") > tday)
             inside = (ts >= src_t.min()) & (ts <= src_t.max()) & ok_day
             if not inside.any():
                 continue
